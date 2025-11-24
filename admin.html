@@ -269,30 +269,35 @@ allPeserta.sort((a,b) => {
   }
 }
 
-allPeserta.forEach(p => {
-  const ref = doc(db, 'peserta', p.id);
-  onSnapshot(ref, snap => {
-    if(!snap.exists()) return;
-    const data = snap.data();
+function setupRealtimeListeners(){
+  allPeserta.forEach(p => {
+    const ref = doc(db, 'peserta', p.id);
+    onSnapshot(ref, snap => {
+      if(!snap.exists()) return;
+      const data = snap.data();
 
-    if(data.dipanggil){
-      const existingToast = document.getElementById('toast-call-' + p.id);
-      if(existingToast) return;
+      // panggilan realtime
+      if(data.dipanggil){
+        const existingToast = document.getElementById('toast-call-' + p.id);
+        if(existingToast) return;
 
-      const t = document.createElement('div');
-      t.id = 'toast-call-' + p.id;
-      t.className = 'fixed top-6 right-6 bg-yellow-400 text-black px-4 py-2 rounded shadow-lg z-[9999] animate-pulse';
-      t.textContent = `Peserta ${p.nama} dipanggil!`;
-      document.body.appendChild(t);
+        const t = document.createElement('div');
+        t.id = 'toast-call-' + p.id;
+        t.className = 'fixed top-6 right-6 bg-yellow-400 text-black px-4 py-2 rounded shadow-lg z-[9999] animate-pulse';
+        t.textContent = `Peserta ${p.nama} dipanggil!`;
+        document.body.appendChild(t);
 
-      // suara panggil
-      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
-      audio.play();
+        const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+        audio.play();
 
-      setTimeout(()=> t.remove(), 5000);
-    }
+        setTimeout(()=> t.remove(), 5000);
+      }
+
+      // update status daftar realtime
+      renderList(allPeserta);
+    });
   });
-});
+}
 
 /* render list */
 function renderList(list){
