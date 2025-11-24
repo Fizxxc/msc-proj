@@ -1,0 +1,271 @@
+/* =====================
+   GLOBAL BASE STYLES
+   ===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: #f1f3f6;
+  color: #333;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 95%;
+  max-width: 520px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 18px;
+  color: #222;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* =====================
+   INPUT & FORM ELEMENTS
+   ===================== */
+input,
+select {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #cfd3d8;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #4a8bff;
+  outline: none;
+  box-shadow: 0 0 4px rgba(74, 139, 255, 0.4);
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4f7cff, #335dff);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: 0.25s;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #335dff, #4f7cff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+button.secondary {
+  background: #f2f4f7;
+  color: #444;
+}
+
+button.secondary:hover {
+  background: #e5e7eb;
+}
+
+/* =====================
+   SUCCESS PAGE
+   ===================== */
+.success-box {
+  text-align: center;
+  padding: 20px;
+  background: #f9fcff;
+  border-radius: 12px;
+  border: 1px solid #dbe7ff;
+}
+
+.success-big {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #2c5eff;
+}
+
+.gift-text {
+  font-size: 18px;
+  margin-top: 14px;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.doorprize-number {
+  margin-top: 20px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #d63384;
+}
+
+.screenshot-btn {
+  background: #28a745 !important;
+  margin-top: 25px;
+}
+
+/* =====================
+   ADMIN PANEL
+   ===================== */
+.admin-container {
+  max-width: 900px;
+  margin: 30px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.table-box {
+  margin-top: 25px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th {
+  padding: 12px;
+  background: #eef2ff;
+  font-weight: 700;
+  color: #2a3faa;
+  border-bottom: 2px solid #ccd6ff;
+}
+
+table td {
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.status-ready {
+  color: #28a745;
+  font-weight: 700;
+}
+
+.status-pending {
+  color: #dc3545;
+  font-weight: 700;
+}
+
+.upload-box {
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px solid #d1d9e6;
+  border-radius: 10px;
+}
+
+/* =====================
+   LOGIN / REGISTER ADMIN
+   ===================== */
+.auth-box {
+  max-width: 450px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.auth-title {
+  font-size: 26px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  color: #2d3eff;
+}
+
+.switch-link {
+  margin-top: 12px;
+  display: inline-block;
+  font-size: 14px;
+  color: #3a52ff;
+  cursor: pointer;
+}
+
+.switch-link:hover {
+  text-decoration: underline;
+}
+
+/* =====================
+   UTILITIES
+   ===================== */
+.hidden {
+  display: none;
+}
+
+.center {
+  text-align: center;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.success-tag {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #e8ffe8;
+  color: #0f8a0f;
+  font-weight: 600;
+}
+
+.error-tag {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #ffe8e8;
+  color: #cf2a2a;
+  font-weight: 600;
+}
+
+/* =====================
+   SPONSOR SLIDER
+   ===================== */
+.sponsor-slider {
+  width: max-content;
+  animation: slideLeft 15s linear infinite;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}

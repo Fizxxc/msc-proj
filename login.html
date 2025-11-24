@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in {
+      animation: fadeIn .4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div class="w-full max-w-md px-6 fade-in">
+
+    <!-- Card -->
+    <div class="bg-white/90 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-gray-200">
+
+      <h2 class="text-2xl font-bold text-center mb-2">Admin Login</h2>
+      <p class="text-center text-gray-500 mb-6 text-sm">Masuk untuk mengelola dashboard admin</p>
+
+      <!-- Error Message -->
+      <div id="errorBox" class="hidden bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm mb-4"></div>
+
+      <!-- Email -->
+      <label class="text-sm font-medium text-gray-600">Email</label>
+      <input id="email" type="email"
+        class="mt-1 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none transition"
+        placeholder="contoh@email.com">
+
+      <!-- Password -->
+      <label class="text-sm font-medium text-gray-600 mt-4 block">Password</label>
+      <input id="password" type="password"
+        class="mt-1 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none transition"
+        placeholder="••••••••">
+
+      <!-- Login Button -->
+      <button id="btnLogin"
+        class="mt-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg w-full font-semibold transition shadow">
+        Login
+      </button>
+
+      <!-- Loading Indicator -->
+      <div id="loading" class="hidden mt-3 text-center text-gray-600 text-sm">
+        Memproses login...
+      </div>
+
+    </div>
+     <!-- FOOTER -->
+      <footer class="mt-10 text-center text-xs text-gray-500">
+        &copy; 2025 SMK METLAND CIBITUNG |
+        Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+
+         <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold" >+62 889-9111-4939</b></p>
+      </footer>
+  </div>
+
+  <script type="module">
+    import { auth } from '/firebase.js';
+    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const emailEl = document.getElementById('email');
+    const passEl = document.getElementById('password');
+    const btn = document.getElementById('btnLogin');
+    const errorBox = document.getElementById('errorBox');
+    const loading = document.getElementById('loading');
+
+    // Real-time validation
+    function validateForm() {
+      const email = emailEl.value.trim();
+      const pw = passEl.value.trim();
+      const valid = email.length > 5 && pw.length >= 6;
+
+      btn.classList.toggle('disabled', !valid);
+      return valid;
+    }
+
+    emailEl.addEventListener('input', validateForm);
+    passEl.addEventListener('input', validateForm);
+
+    // Login handler
+    btn.addEventListener('click', async () => {
+      if (!validateForm()) return;
+
+      const email = emailEl.value.trim();
+      const pw = passEl.value.trim();
+
+      btn.classList.add("disabled");
+      loading.classList.remove("hidden");
+      errorBox.classList.add("hidden");
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pw);
+
+        // Success animation then redirect
+        loading.innerText = "Login berhasil! Mengalihkan...";
+        setTimeout(() => {
+          location.href = "/admin";
+        }, 600);
+
+      } catch (err) {
+        errorBox.innerText = err.message;
+        errorBox.classList.remove("hidden");
+      }
+
+      btn.classList.remove("disabled");
+      loading.classList.add("hidden");
+    });
+
+  </script>
+
+</body>
+
+</html>

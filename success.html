@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registrasi - Sukses</title>
+
+  <script src="https://cdn.lordicon.com/lordicon.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    .highlight {
+      animation: glow 1.2s ease-out;
+    }
+
+    @keyframes glow {
+      0% {
+        background: rgba(255, 255, 0, 0.4);
+      }
+
+      100% {
+        background: transparent;
+      }
+    }
+
+    /* Fade out transition */
+    #pageLoader {
+      transition: opacity .6s ease, transform .6s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-green-50 min-h-screen flex items-center justify-center p-6">
+
+  <!-- LOADING OVERLAY -->
+  <div id="pageLoader" class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
+         flex flex-col items-center justify-center z-[9999]">
+
+    <!-- RING ANIMASI -->
+    <div class="relative">
+      <div class="w-20 h-20 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+
+      <!-- ICON LORDICON DI TENGAH -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop" colors="primary:#1e3a8a"
+          style="width:55px;height:55px">
+        </lord-icon>
+      </div>
+    </div>
+
+    <p class="mt-6 text-blue-800 font-semibold tracking-wide text-sm animate-pulse">
+      Tunggu Sebentar ya kak...
+    </p>
+  </div>
+
+
+  <div class="max-w-md w-full bg-white p-6 rounded-xl shadow-lg text-center">
+
+    <h2 class="text-2xl font-bold text-green-800">Registrasi Berhasil 🎉</h2>
+    <p class="mt-1 text-gray-700">
+      Halo <span id="nama" class="font-semibold"></span>,
+    </p>
+    <p class="text-gray-700">Silakan tunggu konfirmasi dari panitia.</p>
+
+    <!-- STATUS -->
+    <div id="status" class="mt-6"></div>
+
+    <button id="btnCekStatus"
+      class="mt-3 px-4 py-2 bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition">
+      Cek Status
+    </button>
+
+    <!-- QR -->
+    <div class="mt-6">
+      <div id="qrcode" class="mx-auto w-48 h-48"></div>
+      <p class="mt-3 text-sm text-gray-600">Tunjukkan QR ini kepada panitia.</p>
+    </div>
+
+    <div class="mt-5 flex gap-2 justify-center">
+      <button id="btnDownload" class="px-4 py-2 bg-blue-600 text-white rounded">
+        Download QR
+      </button>
+      <button id="btnSaveLink" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+        Simpan Link Saya
+      </button>
+      <a href="/" class="px-4 py-2 border rounded text-gray-700">Kembali</a>
+
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500">
+      Jika QR tidak muncul, hubungi developer atau kunjungi
+      <a href="https://info-digicraft.vercel.app/" class="text-blue-900">
+        <b>CLICK DISINI!</b>
+      </a>
+      <p><b>NOTE : HARAP SIMPAN LINK DAN TARUH DI CATATAN ATAUPUN SEBAGAINYA SUPAYA SAAT SUDAH DI SCAN AKAN ADA
+          PANGGILAN OTOMATIS DI PAGE INI!</b></p>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-10 text-center text-xs text-gray-500">
+      &copy; 2025 SMK METLAND CIBITUNG |
+      Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+
+      <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62 889-9111-4939</b></p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { db } from "/firebase.js";
+    import { doc, onSnapshot }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Ambil ID dari URL
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+
+    // Jika ID tidak ada → tampilkan pesan error
+    if (!id) {
+      document.getElementById("status").innerHTML =
+        `<p class="text-red-600 font-semibold">ID tidak valid.</p>`;
+      throw new Error("ID tidak ditemukan");
+    }
+
+    // Generate QR Code
+    try {
+      new QRCode(document.getElementById("qrcode"), {
+        text: id,
+        width: 180,
+        height: 180
+      });
+    } catch (e) {
+      console.error("QR gagal dibuat:", e);
+    }
+
+    // Download QR
+    document.getElementById("btnDownload").onclick = () => {
+      const canvas = document.querySelector("#qrcode canvas");
+      if (!canvas) {
+        alert("QR belum siap diunduh, coba beberapa detik lagi.");
+        return;
+      }
+      const link = document.createElement("a");
+      link.download = "qr-" + id + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+
+    // Tombol highlight status
+    document.getElementById("btnCekStatus").onclick = () => {
+      const box = document.getElementById("status");
+      box.classList.add("highlight");
+      setTimeout(() => box.classList.remove("highlight"), 1200);
+      box.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    // Realtime Listener Firestore
+    const ref = doc(db, "peserta", id);
+
+    onSnapshot(ref, (snap) => {
+      if (!snap.exists()) {
+        document.getElementById("status").innerHTML =
+          `<p class="text-red-600 font-semibold">Data peserta tidak ditemukan.</p>`;
+        return;
+      }
+
+      const data = snap.data();
+
+      // Nama
+      document.getElementById("nama").textContent =
+        data.nama ? data.nama : "(Tanpa Nama)";
+
+      // Status tampil (REALTIME)
+      if (data.status === "confirmed") {
+        document.getElementById("status").innerHTML = `
+      <lord-icon src="https://cdn.lordicon.com/hjeefwhm.json"
+        trigger="loop" style="width:150px;height:150px;">
+      </lord-icon>
+      <p class="mt-2 text-green-700 font-semibold text-lg">
+        Registrasi Anda Sudah Dikonfirmasi!
+      </p>
+      <p class="text-gray-600 text-sm">
+        Silakan ambil souvenir ke panitia.
+      </p>
+    `;
+      } else {
+        document.getElementById("status").innerHTML = `
+      <lord-icon src="https://cdn.lordicon.com/xjovhxra.json"
+        trigger="loop" style="width:120px;height:120px;">
+      </lord-icon>
+      <p class="mt-2 text-gray-700 font-semibold text-lg">
+        Menunggu Konfirmasi Panitia...
+      </p>
+    `;
+      }
+    });
+
+    window.addEventListener("load", () => {
+      const loader = document.getElementById("pageLoader");
+
+      // Animasi keluar
+      loader.style.opacity = "0";
+      loader.style.transform = "scale(1.1)";
+
+      setTimeout(() => loader.style.display = "none", 600);
+    });
+
+    // Listener panggil admin
+    const callRef = doc(db, "call_admin", id); // id user
+
+    onSnapshot(callRef, (snap) => {
+      if (!snap.exists()) return; // tidak ada panggilan
+
+      const data = snap.data();
+      if (!data) return;
+
+      // Nama user
+      const userName = data.nama || "Peserta";
+
+      // Notifikasi suara
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+      audio.play();
+
+      // Notifikasi visual
+      const notifBox = document.createElement("div");
+      notifBox.textContent = `Admin memanggil ${userName}!`;
+      notifBox.className = "fixed top-4 right-4 bg-yellow-400 text-black px-4 py-2 rounded shadow-lg animate-pulse z-[9999]";
+      document.body.appendChild(notifBox);
+
+      // Hilangkan notif setelah 5 detik
+      setTimeout(() => notifBox.remove(), 5000);
+    });
+
+    // Tombol Simpan Link
+    document.getElementById("btnSaveLink").onclick = () => {
+      const linkSimpan = window.location.href;
+      navigator.clipboard.writeText(linkSimpan)
+        .then(() => {
+          alert("Link halaman sukses telah disalin! ID Anda: " + id);
+        })
+        .catch(() => {
+          alert("Gagal menyalin link, silakan salin manual.");
+        });
+    };
+  </script>
+
+</body>
+
+</html>

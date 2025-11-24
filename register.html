@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daftar Admin</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #eef2ff, #e0f2fe);
+    }
+  </style>
+</head>
+
+<body class="flex justify-center items-center min-h-screen">
+
+  <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Daftar Admin</h2>
+
+    <div class="space-y-4">
+      <div>
+        <label class="text-sm font-medium">Email Admin</label>
+        <input id="email" type="email"
+          class="mt-1 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-400"
+          placeholder="contoh: admin@gmail.com">
+      </div>
+
+      <div>
+        <label class="text-sm font-medium">Password</label>
+        <input id="password" type="password"
+          class="mt-1 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-400"
+          placeholder="min 6 karakter">
+      </div>
+
+      <button id="btnReg"
+        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg w-full transition font-semibold">
+        Daftar Admin
+      </button>
+
+      <p class="text-center text-sm text-gray-500 mt-3">
+        Sudah punya akun? <a href="/login" class="text-blue-600 hover:underline">Login</a>
+      </p>
+    </div>
+     <!-- FOOTER -->
+      <footer class="mt-10 text-center text-xs text-gray-500">
+        &copy; 2025 SMK METLAND CIBITUNG |
+        Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+
+         <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold" >+62 889-9111-4939</b></p>
+      </footer>
+  </div>
+
+  <script type="module">
+    import { auth, db } from '/firebase.js';
+    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const btn = document.getElementById('btnReg');
+
+    btn.addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const pw = document.getElementById('password').value;
+
+      // VALIDASI
+      if (!email || !pw) {
+        return Swal.fire("Oops!", "Email dan password tidak boleh kosong!", "warning");
+      }
+      if (pw.length < 6) {
+        return Swal.fire("Password terlalu pendek!", "Minimal 6 karakter.", "error");
+      }
+
+      // LOADING BUTTON
+      btn.disabled = true;
+      btn.innerHTML = "Mendaftarkan...";
+
+      try {
+        const res = await createUserWithEmailAndPassword(auth, email, pw);
+
+        // SIMPAN DATA KE FIRESTORE
+        await setDoc(doc(db, "admins", res.user.uid), {
+          email,
+          role: "admin",
+          createdAt: new Date().toISOString()
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Admin berhasil terdaftar!",
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        setTimeout(() => {
+          location.href = "/login";
+        }, 1500);
+
+      } catch (e) {
+        Swal.fire("Error!", e.message, "error");
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = "Daftar Admin";
+    });
+  </script>
+
+</body>
+</html>

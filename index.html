@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pendaftaran Peserta</title>
+    <link rel="icon" href="assets/img/logo.png" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link rel="stylesheet" href="/styles/style.css">
+
+    <style>
+        #pageLoader {
+            transition: opacity .6s ease, transform .6s ease;
+        }
+        .sponsor-slider {
+            white-space: nowrap;
+            animation: slide 30s linear infinite;
+        }
+        @keyframes slide {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-100 min-h-screen">
+
+    <!-- LOADING -->
+    <div id="pageLoader"
+        class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
+              flex flex-col items-center justify-center z-[9999]">
+
+        <div class="relative">
+            <div class="w-20 h-20 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+
+            <div class="absolute inset-0 flex items-center justify-center">
+                <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop"
+                    colors="primary:#1e3a8a" style="width:55px;height:55px">
+                </lord-icon>
+            </div>
+        </div>
+
+        <p class="mt-6 text-blue-800 font-semibold tracking-wide text-sm animate-pulse">
+            Menyiapkan halaman untuk Anda...
+        </p>
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="max-w-xl mx-auto px-4 sm:px-6 pt-10 pb-16">
+
+        <div class="text-center mb-8">
+            <img src="/assets/img/Logo metland.png"
+            class="w-39 h-36 sm:w-49 sm:h-46 mx-auto drop-shadow-lg object-contain" alt="Logo MSC">
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-4 leading-tight text-center">
+            Form Pendaftaran Peserta
+        </h1>
+
+        <p class="text-gray-600 text-xs sm:text-sm mt-1 text-center">
+            Silakan isi data berikut untuk mendaftar kegiatan.
+        </p>
+
+        <!-- FORM DAFTAR -->
+<div class="bg-white p-5 rounded-xl shadow border mt-6">
+
+    <label class="block text-sm font-semibold text-gray-700">Nama lengkap</label>
+    <input id="nama"
+        class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+        placeholder="Contoh: FizzxDevv">
+
+    <label class="block text-sm font-semibold text-gray-700">Nomor HP</label>
+    <input id="hp"
+        class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+        placeholder="08xxxxxxx">
+
+    <button id="btnDaftar"
+        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-150 ease-in-out">
+        Daftar Sekarang
+    </button>
+
+    <!-- 👇 Tambahan: info tanggal & jam -->
+    <p id="infoDate" class="mt-3 text-xs text-gray-500 italic text-center"></p>
+</div>
+
+        <div id="result" class="mt-5"></div>
+
+        <!-- SPONSOR -->
+        <div class="mt-12 overflow-hidden relative">
+            <p class="text-center text-sm sm:text-base font-semibold mb-4 text-gray-700">Didukung oleh:</p>
+
+            <div class="sponsor-slider flex items-center gap-10 py-2">
+                <template id="logos">
+                    <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                    <img src="/assets/img/Logo metland.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                    <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                </template>
+
+                <div class="flex items-center gap-10" id="logoRow1"></div>
+                <div class="flex items-center gap-10 ml-10" id="logoRow2"></div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="mt-10 text-center text-xs text-gray-500">
+            &copy; 2025 SMK METLAND CIBITUNG |
+            Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+
+            <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62 889-9111-4939</a></b></p>
+        </footer>
+
+    </div>
+
+    <script type="module">
+        import { db } from '/firebase.js';
+        import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const nama = document.getElementById("nama");
+        const hp = document.getElementById("hp");
+        const btnDaftar = document.getElementById("btnDaftar");
+
+        const norm = s => (s || "").toString().trim().toLowerCase();
+
+        btnDaftar.addEventListener("click", async () => {
+            const n = nama.value.trim();
+            const h = hp.value.trim();
+
+            if (!n) return alert("Isi nama lengkap.");
+            if (!h) return alert("Isi nomor HP.");
+
+            btnDaftar.disabled = true;
+            btnDaftar.textContent = "Memproses...";
+
+            const now = new Date();
+            const readable = now.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+            try {
+                const docRef = await addDoc(collection(db, "peserta"), {
+                    nama: n,
+                    hp: h,
+                    namaLower: norm(n),
+                    registered: false,
+                    date: readable,         // **date ditampilkan**
+                    createdAt: now.getTime() // **date untuk sorting**
+                });
+
+                localStorage.setItem("last_register", docRef.id);
+                window.location.href = "/success?id=" + docRef.id;
+
+            } catch (err) {
+                console.error(err);
+                alert("Gagal mendaftar. Coba lagi.");
+            }
+
+            btnDaftar.disabled = false;
+            btnDaftar.textContent = "Daftar Sekarang";
+        });
+
+        // Duplikasi logo slider
+        const logos = document.getElementById("logos").content;
+        document.getElementById("logoRow1").appendChild(logos.cloneNode(true));
+        document.getElementById("logoRow1").appendChild(logos.cloneNode(true));
+        document.getElementById("logoRow2").appendChild(logos.cloneNode(true));
+
+        // Loading remove
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("pageLoader");
+            loader.style.opacity = "0";
+            loader.style.transform = "scale(1.1)";
+            setTimeout(() => loader.style.display = "none", 600);
+        });
+
+        // Menampilkan tanggal & jam saat ini di bawah tombol
+const infoDate = document.getElementById("infoDate");
+
+function updateInfoDate() {
+    const now = new Date();
+    const readable = now.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+    infoDate.textContent = "Waktu pendaftaran saat ini: " + readable;
+}
+
+// panggil sekali saat halaman dibuka
+updateInfoDate();
+
+setInterval(updateInfoDate, 60 * 1000);
+
+    </script>
+
+</body>
+</html>

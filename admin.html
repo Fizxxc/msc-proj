@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard - Doorpri</title>
+
+  <!-- Styles / Tailwind CDN (dev) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- XLSX UMD (already used in your project) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- html5-qrcode for QR scanning -->
+  <script src="https://raw.githack.com/mebjas/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
+
+  <style>
+    /* Minor custom styles to make UI look modern (B style) */
+    body { background: #f1f5f9; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 6px 18px rgba(15,23,42,0.06); border: 1px solid #eef2f7; }
+    .input { width: 100%; padding: .6rem .75rem; border: 1px solid #e6edf3; border-radius: .6rem; }
+    .btn { padding: .5rem .9rem; border-radius: .6rem; font-weight: 600; }
+    .btn-primary { background: #1e3a8a; color: white; }
+    .btn-green { background: #059669; color: white; }
+    .btn-yellow { background: #d97706; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    .list-item:hover { transform: translateY(-2px); transition: .12s; box-shadow: 0 6px 16px rgba(2,6,23,0.06); }
+    /* modal */
+    .modal-backdrop { background: rgba(2,6,23,0.45); position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:60; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="text-2xl font-bold">ADMIN PAGE</div>
+        <div class="text-sm opacity-90">Dashboard registrasi & monitoring</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnScanQR" class="btn btn-green">📷 Scan QR</button>
+        <button id="btnRefresh" class="btn btn-primary">🔄 Refresh</button>
+        <button id="btnLogout" class="btn btn-danger">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="max-w-6xl mx-auto p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Left: Import & Search -->
+      <div class="col-span-2 space-y-6">
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-semibold">Import Data Peserta</h3>
+              <p class="text-sm text-slate-500">Format Excel: gunakan header sesuai template (lihat petunjuk).</p>
+            </div>
+            <div class="flex gap-2">
+              <input id="fileParticipants" type="file" accept=".xlsx" class="input" />
+              <button id="importParticipants" class="btn btn-primary">Import</button>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-medium">Cari peserta</label>
+              <div class="mt-2 flex gap-2">
+                <input id="searchAdmin" class="input" placeholder="Cari nama..." />
+                <button id="btnSearchLocal" class="btn btn-yellow">Cari</button>
+              </div>
+              <p id="searchHint" class="text-xs text-slate-400 mt-2">Tekan Enter atau klik Cari. Pencarian case-insensitive.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants list -->
+        <div id="list" class="card space-y-3 max-h-[64vh] overflow-auto pr-2">
+          <div class="text-slate-500">Memuat data peserta...</div>
+        </div>
+      </div>
+
+      <!-- Right: Stats & Alerts -->
+      <div class="space-y-6">
+        <div class="card">
+          <h4 class="font-semibold mb-2">Statistik</h4>
+          <div id="stats">Memuat...</div>
+        </div>
+
+        <div class="card">
+          <h4 class="font-semibold mb-2">Duplicate attempts</h4>
+          <div id="alerts" class="space-y-2 text-sm text-red-600">Memuat...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div id="qrModal" style="display:none" class="modal-backdrop">
+    <div class="bg-white rounded-xl p-4 w-[92%] max-w-2xl">
+      <div class="flex justify-between items-center mb-3">
+        <div class="font-semibold">Scan QR — Pindai kode peserta</div>
+        <div class="flex gap-2">
+          <button id="closeQrModal" class="btn btn-danger">Tutup</button>
+        </div>
+      </div>
+
+      <div id="qrReader" class="w-full h-80 bg-slate-100 rounded overflow-hidden"></div>
+
+      <div class="mt-3 text-sm text-slate-600">
+        Hasil scan akan mencoba membaca ID peserta (dokumen id). Format QR sebaiknya berisi ID dokumen peserta saja (mis: <code>nama_satu_abc1</code>) atau path <code>peserta/&lt;id&gt;</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Minimal Toast -->
+  <div id="toast" style="display:none" class="fixed right-6 bottom-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+
+     <!-- FOOTER -->
+      <footer class="mt-10 text-center text-xs text-gray-500">
+        &copy; 2025 SMK METLAND CIBITUNG |
+        Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+
+         <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold" >+62 889-9111-4939</b></p>
+      </footer>
+  
+<script type="module">
+/* ----------------------------
+   Dependencies:
+   - /firebase.js (your existing file)
+   - html5-qrcode (included above)
+   - xlsx (included above)
+   This script updates admin UI and adds QR scanning.
+   Keep core functions (import, assign) unchanged except switching collection name to "peserta" where appropriate.
+----------------------------- */
+
+import { auth, db } from '/firebase.js';
+
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+  collection, getDocs, doc, setDoc, updateDoc, query, where, limit, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* Elements */
+const listEl = document.getElementById('list');
+const statsEl = document.getElementById('stats');
+const alertsEl = document.getElementById('alerts');
+const remainingEl = document.getElementById('remaining'); // may not exist but safe
+const fileParticipants = document.getElementById('fileParticipants');
+const importParticipantsBtn = document.getElementById('importParticipants');
+const btnRefresh = document.getElementById('btnRefresh');
+const btnLogout = document.getElementById('btnLogout');
+const btnScanQR = document.getElementById('btnScanQR');
+const qrModal = document.getElementById('qrModal');
+const closeQrModal = document.getElementById('closeQrModal');
+const qrReader = document.getElementById('qrReader');
+const btnSearchLocal = document.getElementById('btnSearchLocal');
+const searchAdmin = document.getElementById('searchAdmin');
+
+let allPeserta = []; // cache
+
+/* small helper */
+function toast(msg, time = 2500) {
+  const t = document.getElementById('toast');
+  if(!t) return alert(msg);
+  t.innerText = msg;
+  t.style.display = 'block';
+  setTimeout(()=> t.style.display='none', time);
+}
+
+/* ========== AUTH CHECK ========== */
+onAuthStateChanged(auth, async (user) => {
+  if(!user) return location.href = '/login';
+  // check admin doc exists
+  const adminSnaps = await getDocs(collection(db, 'admins'));
+  const isAdmin = adminSnaps.docs.some(d => d.id === user.uid);
+  if(!isAdmin){
+    alert('Akses ditolak: Anda bukan admin.');
+    await signOut(auth);
+    return location.href = '/login';
+  }
+});
+
+/* ========== IMPORT PARTICIPANTS ========== */
+importParticipantsBtn.addEventListener('click', async () => {
+  const file = fileParticipants.files[0];
+  if(!file) return alert('Pilih file .xlsx');
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+  let created = 0;
+  for(const r of rows){
+    const nama = (r['Nama'] || r['nama'] || r['Name'] || '').toString().trim();
+    if(!nama) continue;
+    const id = nama.toLowerCase().replace(/\s+/g,'_') + '_' + Math.random().toString(36).slice(2,6);
+
+    await setDoc(doc(db, 'peserta', id), {
+  nama,
+  hp: r['Nomor HP'] || r['hp'] || r['No HP'] || '',
+  createdAt: Date.now(),              // waktu import
+  registered: false,
+  registeredAt: null,                // waktu registrasi ulang
+  dipanggil: false,                  // status pemanggilan
+  dipanggilAt: null                  // waktu dipanggil
+}, { merge: true });
+
+
+    created++;
+  }
+
+  alert('Import peserta selesai: ' + created);
+  await loadAll();
+});
+
+
+/* ========== SEARCH LOCAL ========== */
+btnSearchLocal.addEventListener('click', async ()=> {
+  const q = searchAdmin.value.trim();
+  if(!q) return loadAll();
+  const nrm = q.toLowerCase().trim();
+  const filtered = allPeserta.filter(p => (p.nama || '').toLowerCase().includes(nrm));
+  renderList(filtered);
+});
+
+/* Enter key for search */
+searchAdmin.addEventListener('keydown', (e)=> { if(e.key === 'Enter') btnSearchLocal.click(); });
+
+/* ========== LOAD ALL ========== */
+async function loadAll(){
+  listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
+
+  // peserta
+  const snaps = await getDocs(collection(db, 'peserta'));
+  allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
+
+// Urutkan yang sudah registrasi dari yang paling awal datang
+allPeserta.sort((a,b) => {
+  if(a.registered && b.registered) return a.registeredAt - b.registeredAt;
+  if(a.registered && !b.registered) return -1;
+  if(!a.registered && b.registered) return 1;
+  return a.createdAt - b.createdAt; // fallback
+});
+
+
+  // doorprize remaining (optional)
+  const dpSnaps = await getDocs(query(collection(db, 'doorprizes'), where('assignedTo','==', null)));
+  const remaining = dpSnaps.size;
+
+  renderList(allPeserta);
+
+  // stats
+  const total = allPeserta.length;
+  const reg = allPeserta.filter(p => p.registered).length;
+  statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b><br/>Doorprize (sisa): <b class="text-indigo-600">${remaining}</b>`;
+
+  // alerts (doubleAttempts) — note collection might be 'peserta' or 'participants' earlier; use peserta
+  const alerts = allPeserta.filter(p => (p.doubleAttempts||0) > 0);
+  if(alerts.length === 0) alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
+  else {
+    alertsEl.innerHTML = alerts.map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`).join('');
+  }
+}
+
+/* render list */
+function renderList(list){
+  if(!list || list.length === 0) { listEl.innerHTML = '<div class="text-slate-500">Tidak ada peserta.</div>'; return; }
+  listEl.innerHTML = list.map(p => `
+    <div class="list-item flex items-center justify-between p-3 border rounded-lg bg-white">
+      <div>
+        <div class="font-semibold">${p.nama}</div>
+        <div class="text-xs text-slate-500">${p.hp || '-'} • ${p.alamat || '-'}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        ${p.registered ? '<span class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm">Sudah</span>' : `<button class="btn btn-primary btn-mark" data-id="${p.id}">Tandai</button>`}
+        <button class="btn btn-green btn-call" data-id="${p.id}">Panggil</button>
+        <button class="btn btn-yellow btn-info" data-id="${p.id}">Detail</button>
+      </div>
+    </div>
+  `).join('');
+
+  // attach handlers
+  document.querySelectorAll('.btn-mark').forEach(b=>{
+    b.onclick = async (e) => {
+      const id = b.dataset.id;
+      if(!confirm('Tandai peserta sudah registrasi ulang?')) return;
+      await setDoc(doc(db, 'peserta', id), { registered: true, registeredAt: new Date().toISOString() }, { merge: true });
+      toast('Tandai berhasil');
+      await loadAll();
+    };
+  });
+
+  document.querySelectorAll('.btn-info').forEach(b=>{
+    b.onclick = (e) => {
+      const id = b.dataset.id;
+      const p = allPeserta.find(x=> x.id === id);
+      if(!p) return;
+      showParticipantDetailModal(p);
+    };
+  });
+}
+
+document.querySelectorAll('.btn-call').forEach(b => {
+  b.onclick = async () => {
+    const id = b.dataset.id;
+
+    await setDoc(doc(db, 'peserta', id), {
+      dipanggil: true,
+      dipanggilAt: Date.now()
+    }, { merge: true });
+
+    toast('Peserta dipanggil!');
+    loadAll();
+  };
+});
+
+/* small detail modal (uses browser alert for simplicity) */
+function showParticipantDetailModal(p){
+  const info = [
+    `Nama: ${p.nama||'-'}`,
+    `Umur: ${p.umur||'-'}`,
+    `HP: ${p.hp||'-'}`,
+    `Alamat: ${p.alamat||'-'}`,
+    `Ukuran baju: ${p.ukuran||'-'}`,
+    `Persetujuan: ${p.persetujuan ? 'Ya' : 'Tidak'}`,
+    `Registered: ${p.registered ? 'Ya' : 'Belum'}`
+  ].join('\n');
+  alert(info);
+}
+
+/* ========== QR SCANNER ========== */
+let html5QrcodeScanner = null;
+
+btnScanQR.addEventListener('click', ()=> {
+  qrModal.style.display = 'flex';
+  startQrScanner();
+});
+
+closeQrModal.addEventListener('click', async ()=> {
+  stopQrScanner();
+  qrModal.style.display = 'none';
+});
+
+async function startQrScanner(){
+  // ensure html5Qrcode global exists
+  if(typeof Html5Qrcode === 'undefined'){ alert('QR library belum ter-load.'); return; }
+
+  // create scanner
+  const qrRegionId = 'qrReader';
+  // clear previous
+  qrReader.innerHTML = '';
+  html5QrcodeScanner = new Html5Qrcode(qrRegionId);
+
+  const config = { fps: 10, qrbox: { width: 300, height: 300 } };
+
+  try {
+    await html5QrcodeScanner.start(
+      { facingMode: "environment" },
+      config,
+      qrCodeMessage => {
+        // on success
+        onQrScanned(qrCodeMessage);
+        // optionally stop scanning automatically after a successful scan
+        stopQrScanner();
+        qrModal.style.display = 'none';
+      },
+      errorMessage => {
+        // ignore per-frame errors
+      }
+    );
+  } catch (err) {
+    alert('Gagal memulai kamera: ' + err);
+  }
+}
+
+function stopQrScanner(){
+  if(html5QrcodeScanner){
+    html5QrcodeScanner.stop().catch(()=>{}).finally(()=> {
+      try { html5QrcodeScanner.clear(); } catch(e) {}
+      html5QrcodeScanner = null;
+      qrReader.innerHTML = '';
+    });
+  }
+}
+
+async function onQrScanned(text){
+  let id = text;
+
+  // Jika QR berisi URL, ambil ID paling belakang
+  if(text.includes('/')) id = text.split('/').pop();
+
+  // Cari di array cache peserta
+  const found = allPeserta.find(p => p.id === id);
+
+  if(found){
+    stopQrScanner();
+    qrModal.style.display = 'none';
+    location.href = `/konfirmasi-admin?id=${found.id}`;
+    return;
+  }
+
+  alert("Peserta tidak ditemukan. Pastikan QR berisi ID peserta.");
+}
+
+
+/* ========== Other helpers: refresh & logout ========== */
+btnRefresh.addEventListener('click', loadAll);
+btnLogout.addEventListener('click', ()=> {
+  signOut(auth).then(()=> location.href = '/login');
+});
+
+/* load initially (in case auth already ready) */
+setTimeout(()=> loadAll().catch(()=>{}), 300);
+
+</script>
+</body>
+</html>
