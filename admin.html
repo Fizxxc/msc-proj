@@ -269,6 +269,31 @@ allPeserta.sort((a,b) => {
   }
 }
 
+allPeserta.forEach(p => {
+  const ref = doc(db, 'peserta', p.id);
+  onSnapshot(ref, snap => {
+    if(!snap.exists()) return;
+    const data = snap.data();
+
+    if(data.dipanggil){
+      const existingToast = document.getElementById('toast-call-' + p.id);
+      if(existingToast) return;
+
+      const t = document.createElement('div');
+      t.id = 'toast-call-' + p.id;
+      t.className = 'fixed top-6 right-6 bg-yellow-400 text-black px-4 py-2 rounded shadow-lg z-[9999] animate-pulse';
+      t.textContent = `Peserta ${p.nama} dipanggil!`;
+      document.body.appendChild(t);
+
+      // suara panggil
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+      audio.play();
+
+      setTimeout(()=> t.remove(), 5000);
+    }
+  });
+});
+
 /* render list */
 function renderList(list){
   if(!list || list.length === 0) { listEl.innerHTML = '<div class="text-slate-500">Tidak ada peserta.</div>'; return; }
@@ -310,29 +335,38 @@ function renderList(list){
 document.querySelectorAll('.btn-call').forEach(b => {
   b.onclick = async () => {
     const id = b.dataset.id;
+    if(!confirm('Panggil peserta ini?')) return;
 
-    await setDoc(doc(db, 'peserta', id), {
-      dipanggil: true,
-      dipanggilAt: Date.now()
-    }, { merge: true });
+    try {
+      await setDoc(doc(db, 'peserta', id), {
+        dipanggil: true,
+        dipanggilAt: Date.now()
+      }, { merge: true });
 
-    toast('Peserta dipanggil!');
-    loadAll();
+      toast('Peserta dipanggil!', 3000);
+    } catch(e) {
+      console.error('Gagal memanggil:', e);
+      toast('Gagal memanggil peserta!', 3000);
+    }
   };
 });
+
 
 /* small detail modal (uses browser alert for simplicity) */
 function showParticipantDetailModal(p){
   const info = [
     `Nama: ${p.nama||'-'}`,
-    `Umur: ${p.umur||'-'}`,
     `HP: ${p.hp||'-'}`,
-    `Alamat: ${p.alamat||'-'}`,
-    `Ukuran baju: ${p.ukuran||'-'}`,
     `Persetujuan: ${p.persetujuan ? 'Ya' : 'Tidak'}`,
     `Registered: ${p.registered ? 'Ya' : 'Belum'}`
   ].join('\n');
-  alert(info);
+
+  const t = document.createElement('div');
+  t.className = 'fixed top-6 right-6 bg-slate-900 text-white px-4 py-3 rounded shadow-lg z-[9999]';
+  t.innerText = info;
+  document.body.appendChild(t);
+
+  setTimeout(()=> t.remove(), 8000);
 }
 
 /* ========== QR SCANNER ========== */
@@ -418,6 +452,25 @@ btnLogout.addEventListener('click', ()=> {
 
 /* load initially (in case auth already ready) */
 setTimeout(()=> loadAll().catch(()=>{}), 300);
+
+document.querySelectorAll('.btn-call').forEach(b => {
+  b.onclick = async () => {
+    const id = b.dataset.id;
+    if(!confirm('Panggil peserta ini?')) return;
+
+    try {
+      await setDoc(doc(db, 'peserta', id), {
+        dipanggil: true,
+        dipanggilAt: Date.now()
+      }, { merge: true });
+
+      toast('Peserta dipanggil!', 3000);
+    } catch(e) {
+      console.error('Gagal memanggil:', e);
+      toast('Gagal memanggil peserta!', 3000);
+    }
+  };
+});
 
 </script>
 </body>
