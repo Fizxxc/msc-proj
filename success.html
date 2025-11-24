@@ -6,15 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrasi - Sukses</title>
 
+  <!-- Lordicon -->
   <script src="https://cdn.lordicon.com/lordicon.js"></script>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     .highlight { animation: glow 1.2s ease-out; }
     @keyframes glow { 0% { background: rgba(255, 255, 0, 0.4); } 100% { background: transparent; } }
-
-    /* Fade out transition */
     #pageLoader { transition: opacity .6s ease, transform .6s ease; }
   </style>
 </head>
@@ -22,14 +25,11 @@
 <body class="bg-green-50 min-h-screen flex items-center justify-center p-6">
 
   <!-- LOADING OVERLAY -->
-  <div id="pageLoader" class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
-         flex flex-col items-center justify-center z-[9999]">
+  <div id="pageLoader" class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200 flex flex-col items-center justify-center z-[9999]">
     <div class="relative">
       <div class="w-20 h-20 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
       <div class="absolute inset-0 flex items-center justify-center">
-        <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop" colors="primary:#1e3a8a"
-          style="width:55px;height:55px">
-        </lord-icon>
+        <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop" colors="primary:#1e3a8a" style="width:55px;height:55px"></lord-icon>
       </div>
     </div>
     <p class="mt-6 text-blue-800 font-semibold tracking-wide text-sm animate-pulse">
@@ -47,8 +47,7 @@
     <!-- STATUS -->
     <div id="status" class="mt-6"></div>
 
-    <button id="btnCekStatus"
-      class="mt-3 px-4 py-2 bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition">
+    <button id="btnCekStatus" class="mt-3 px-4 py-2 bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition">
       Cek Status
     </button>
 
@@ -59,20 +58,18 @@
     </div>
 
     <div class="mt-5 flex gap-2 justify-center">
-      <button id="btnDownload" class="px-4 py-2 bg-blue-600 text-white rounded">
+      <button id="btnDownload" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Download QR
       </button>
       <button id="btnSaveLink" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">
         Simpan Link Saya
       </button>
-      <a href="/" class="px-4 py-2 border rounded text-gray-700">Kembali</a>
+      <a href="/" class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Kembali</a>
     </div>
 
     <div class="mt-4 text-xs text-gray-500">
       Jika QR tidak muncul, hubungi developer atau kunjungi
-      <a href="https://info-digicraft.vercel.app/" class="text-blue-900">
-        <b>CLICK DISINI!</b>
-      </a>
+      <a href="https://info-digicraft.vercel.app/" class="text-blue-900"><b>CLICK DISINI!</b></a>
       <p><b>NOTE : HARAP SIMPAN LINK SUPAYA SAAT SUDAH DI SCAN AKAN ADA PANGGILAN OTOMATIS DI PAGE INI!</b></p>
     </div>
 
@@ -141,8 +138,7 @@
       // Status registrasi
       if (data.status === "confirmed") {
         document.getElementById("status").innerHTML = `
-          <lord-icon src="https://cdn.lordicon.com/hjeefwhm.json"
-            trigger="loop" style="width:150px;height:150px;">
+          <lord-icon src="https://cdn.lordicon.com/hjeefwhm.json" trigger="loop" style="width:150px;height:150px;">
           </lord-icon>
           <p class="mt-2 text-green-700 font-semibold text-lg">
             Registrasi Anda Sudah Dikonfirmasi!
@@ -153,8 +149,7 @@
         `;
       } else {
         document.getElementById("status").innerHTML = `
-          <lord-icon src="https://cdn.lordicon.com/xjovhxra.json"
-            trigger="loop" style="width:120px;height:120px;">
+          <lord-icon src="https://cdn.lordicon.com/xjovhxra.json" trigger="loop" style="width:120px;height:120px;">
           </lord-icon>
           <p class="mt-2 text-gray-700 font-semibold text-lg">
             Menunggu Konfirmasi Panitia...
