@@ -509,6 +509,17 @@
     });
 
     /* ================== TAMBAH STATUS ================== */
+
+
+
+    const statusCol = collection(db, 'status');
+
+    onSnapshot(statusCol, (snapshot) => {
+      const allStatus = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderStatusList(allStatus);
+    });
+
+
     const btnAddStatus = document.getElementById('btnAddStatus');
 
     btnAddStatus.addEventListener('click', async () => {
