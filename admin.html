@@ -97,6 +97,7 @@
         <button id="btnScanQR" class="btn btn-green">📷 Scan QR</button>
         <button id="btnRefresh" class="btn btn-primary">🔄 Refresh</button>
         <button id="btnLogout" class="btn btn-danger">🚪 Logout</button>
+        <button id="btnAddStatus" class="btn btn-primary">➕ Tambah Status</button>
       </div>
     </div>
   </div>
@@ -496,6 +497,62 @@
     btnLogout.addEventListener('click', async () => {
       const res = await confirmSwal('Logout?', 'Anda yakin ingin keluar dari admin?', 'question');
       if (res.isConfirmed) signOut(auth).then(() => location.href = '/login');
+    });
+
+    /* ================== TAMBAH STATUS ================== */
+    const btnAddStatus = document.getElementById('btnAddStatus');
+
+    btnAddStatus.addEventListener('click', async () => {
+      const { value: formValues } = await Swal.fire({
+        title: 'Tambah Status Baru',
+        html:
+          `<input id="swal-title" class="swal2-input" placeholder="Judul...">` +
+          `<textarea id="swal-message" class="swal2-textarea" placeholder="Isi pesan..." rows="4"></textarea>` +
+          `<select id="swal-category" class="swal2-select">
+         <option value="Info" selected>Info</option>
+         <option value="Maintenance">Maintenance</option>
+         <option value="Error">Error</option>
+         <option value="Success">Success</option>
+       </select>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+          const title = document.getElementById('swal-title').value.trim();
+          const message = document.getElementById('swal-message').value.trim();
+          const category = document.getElementById('swal-category').value;
+          if (!title || !message) Swal.showValidationMessage('Judul dan pesan tidak boleh kosong!');
+          return { title, message, category };
+        }
+      });
+
+      if (formValues) {
+        try {
+          const newDocRef = doc(collection(db, 'status'));
+          await setDoc(newDocRef, {
+            title: formValues.title,
+            message: formValues.message,
+            category: formValues.category,
+            createdAt: Date.now()
+          });
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Status baru telah ditambahkan.',
+            timer: 1800,
+            showConfirmButton: false
+          });
+
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Terjadi kesalahan: ' + err.message
+          });
+        }
+      }
     });
 
     /* ================== INIT ================== */

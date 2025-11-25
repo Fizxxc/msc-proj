@@ -2,16 +2,53 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/",        "destination": "/index.html" },
-    { "source": "/admin",   "destination": "/admin.html" },
-    { "source": "/login",   "destination": "/login.html" },
-    { "source": "/register","destination": "/register.html" },
-    { "source": "/success", "destination": "/success.html" },
-    { "source": "/konfirmasi", "destination": "/konfirmasi-peserta.html" },
-    { "source": "/konfirmasi-admin", "destination": "/konfirmasi-admin.html" },
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "styles/(.*)", "destination": "/styles/$1"},
-    { "source": "/js/(.*)",     "destination": "/js/$1" },
-    { "source": "/(.*)",        "destination": "/$1" }
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/register",
+      "destination": "/register.html"
+    },
+    {
+      "source": "/success",
+      "destination": "/success.html"
+    },
+    {
+      "source": "/konfirmasi",
+      "destination": "/konfirmasi-peserta.html"
+    },
+    {
+      "source": "/status",
+      "destination": "/status.html"
+    },
+    {
+      "source": "/konfirmasi-admin",
+      "destination": "/konfirmasi-admin.html"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "styles/(.*)",
+      "destination": "/styles/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/js/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
   ]
 }

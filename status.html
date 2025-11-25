@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Web MSC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="/status.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom, #f0f4ff, #ffffff);
+    }
+    .status-card {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.5s ease-out;
+    }
+    .status-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="bg-blue-600 text-white p-6 shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div>
+        <h1 class="text-3xl font-bold tracking-wide">Status Web MSC</h1>
+        <p class="opacity-90 mt-1">Update terbaru dan pengumuman website</p>
+      </div>
+      <div class="text-sm opacity-90">Live updates by MSC - TEAM</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="flex-grow max-w-5xl mx-auto p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="statusList">
+    <div class="text-gray-400 text-center col-span-full">Memuat status...</div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white text-gray-500 text-sm p-4 text-center shadow-inner">
+    &copy; 2025 SMK METLAND CIBITUNG | Dev <b>FizzxDevv</b>
+  </footer>
+
+</body>
+</html>
