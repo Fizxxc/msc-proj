@@ -368,13 +368,21 @@
           const id = b.dataset.id;
           const p = allPeserta.find(x => x.id === id);
           if (!p) return;
+
+          const tanggalDaftar = p.createdAt
+            ? new Date(p.createdAt).toLocaleString('id-ID', {
+              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            })
+            : '-';
+
           Swal.fire({
             title: p.nama,
             html: `
-          <p>HP: ${p.hp || '-'}</p>
-          <p>Registered: ${p.registered ? 'Ya' : 'Belum'}</p>
-          <p>Dipanggil: ${p.dipanggil ? 'Ya' : 'Belum'}</p>
-        `,
+        <p>HP: ${p.hp || '-'}</p>
+        <p>Registered: ${p.registered ? 'Ya' : 'Belum'}</p>
+        <p>Dipanggil: ${p.dipanggil ? 'Ya' : 'Belum'}</p>
+        <p>Tanggal daftar: <b>${tanggalDaftar}</b></p>
+      `,
             icon: 'info'
           });
         };
