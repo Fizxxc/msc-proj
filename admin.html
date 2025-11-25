@@ -619,53 +619,53 @@
 
 
     /* ================== HAPUS STATUS ================== */
-    function setupDeleteStatusButtons() {
-      document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.onclick = async () => {
-          const id = btn.dataset.id;
-          const statusDoc = allStatus.find(s => s.id === id);
-          if (!statusDoc) return;
+    function setupDeleteStatusButtons(statusArray) {
+  document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.id;
+      const statusDoc = statusArray.find(s => s.id === id);
+      if (!statusDoc) return;
 
-          const res = await Swal.fire({
-            title: 'Hapus Status?',
-            html: `
+      const res = await Swal.fire({
+        title: 'Hapus Status?',
+        html: `
           <div class="text-slate-600">
             Apakah kamu yakin ingin menghapus status<br>
             <b class="text-red-600">${statusDoc.title}</b>?<br><br>
             Status yang dihapus <b>tidak dapat dikembalikan</b>.
           </div>
         `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            reverseButtons: true,
-            backdrop: true,
-          });
-
-          if (res.isConfirmed) {
-            try {
-              await deleteDoc(doc(db, 'status', id));
-              Swal.fire({
-                icon: 'success',
-                title: 'Terhapus!',
-                text: 'Status telah dihapus.',
-                timer: 1800,
-                showConfirmButton: false
-              });
-            } catch (err) {
-              Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: 'Terjadi kesalahan: ' + err.message
-              });
-            }
-          }
-        };
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        reverseButtons: true,
       });
-    }
+
+      if (res.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, 'status', id));
+          Swal.fire({
+            icon: 'success',
+            title: 'Terhapus!',
+            text: 'Status telah dihapus.',
+            timer: 1800,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Terjadi kesalahan: ' + err.message
+          });
+        }
+      }
+    };
+  });
+}
+
 
     /* ================== INIT ================== */
     loadAll();
