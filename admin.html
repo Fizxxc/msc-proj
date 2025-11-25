@@ -177,6 +177,24 @@
   <div id="toast" style="display:none"
     class="fixed right-6 bottom-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg"></div>
 
+  <!-- Delete Status Modal -->
+  <div
+    class="status-card flex items-start justify-between p-4 border rounded-lg bg-white shadow hover:shadow-lg transition">
+    <div>
+      <div class="font-semibold text-lg">${s.title}</div>
+      <div class="text-sm text-slate-500">${new Date(s.createdAt).toLocaleString()}</div>
+      <div class="mt-2 text-slate-700">${s.message}</div>
+      <div
+        class="mt-1 text-xs px-2 py-1 inline-block rounded text-white font-semibold bg-${s.category === 'Info' ? 'blue' : s.category === 'Maintenance' ? 'yellow' : s.category === 'Error' ? 'red' : 'green'}-600">
+        ${s.category}</div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <button class="btn btn-danger btn-delete" data-id="${s.id}" title="Hapus status">
+        🗑️ Hapus
+      </button>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="mt-10 text-center text-xs text-gray-500">
     &copy; 2025 SMK METLAND CIBITUNG |
@@ -554,6 +572,85 @@
         }
       }
     });
+
+
+
+    async function renderStatusList(list) {
+      const container = document.getElementById('statusList');
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="text-slate-500 text-center py-4">Belum ada status.</div>';
+        return;
+      }
+
+      // render HTML list status
+      container.innerHTML = list.map(s => `
+    <div class="status-card flex items-start justify-between p-4 border rounded-lg bg-white shadow hover:shadow-lg transition">
+      <div>
+        <div class="font-semibold text-lg">${s.title}</div>
+        <div class="text-sm text-slate-500">${new Date(s.createdAt).toLocaleString()}</div>
+        <div class="mt-2 text-slate-700">${s.message}</div>
+        <div class="mt-1 text-xs px-2 py-1 inline-block rounded text-white font-semibold bg-${s.category === 'Info' ? 'blue' : s.category === 'Maintenance' ? 'yellow' : s.category === 'Error' ? 'red' : 'green'}-600">${s.category}</div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button class="btn btn-danger btn-delete" data-id="${s.id}" title="Hapus status">
+          🗑️ Hapus
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+      // <- panggil di sini supaya tombol hapus bisa bekerja
+      setupDeleteStatusButtons();
+    }
+
+    /* ================== HAPUS STATUS ================== */
+    function setupDeleteStatusButtons() {
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const statusDoc = allStatus.find(s => s.id === id);
+          if (!statusDoc) return;
+
+          const res = await Swal.fire({
+            title: 'Hapus Status?',
+            html: `
+          <div class="text-slate-600">
+            Apakah kamu yakin ingin menghapus status<br>
+            <b class="text-red-600">${statusDoc.title}</b>?<br><br>
+            Status yang dihapus <b>tidak dapat dikembalikan</b>.
+          </div>
+        `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            reverseButtons: true,
+            backdrop: true,
+          });
+
+          if (res.isConfirmed) {
+            try {
+              await deleteDoc(doc(db, 'status', id));
+              Swal.fire({
+                icon: 'success',
+                title: 'Terhapus!',
+                text: 'Status telah dihapus.',
+                timer: 1800,
+                showConfirmButton: false
+              });
+            } catch (err) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Terjadi kesalahan: ' + err.message
+              });
+            }
+          }
+        };
+      });
+    }
 
     /* ================== INIT ================== */
     loadAll();
