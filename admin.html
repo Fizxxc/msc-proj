@@ -382,53 +382,40 @@
     }
 
 
-    // =========== HAPUS PESERTA ============= //
+    // === HAPUS PESERTA ===
     async function hapusPeserta(id, nama) {
-      Swal.fire({
-        title: 'Hapus Peserta?',
-        html: `
-      <div class="text-slate-600">
-        Apakah kamu yakin ingin menghapus data peserta<br>
-        <b class="text-red-600">${nama}</b>?<br><br>
-        Data yang dihapus <b>tidak dapat dikembalikan</b>.
-      </div>
-    `,
-        icon: 'warning',
+      const res = await Swal.fire({
+        title: "Hapus Peserta?",
+        html: `Apakah kamu yakin ingin menghapus <b>${nama}</b>? Data tidak bisa dikembalikan.`,
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        reverseButtons: true,
-        backdrop: true,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await deleteDoc(doc(db, "peserta", id));
-
-            Swal.fire({
-              title: 'Berhasil!',
-              text: 'Peserta telah dihapus.',
-              icon: 'success',
-              timer: 1800,
-              showConfirmButton: false
-            });
-
-            // reload ulang list peserta
-            loadAll();
-
-          } catch (err) {
-            Swal.fire({
-              title: 'Gagal',
-              text: 'Terjadi kesalahan: ' + err.message,
-              icon: 'error'
-            });
-          }
-        }
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Hapus",
+        cancelButtonText: "Batal",
+        reverseButtons: true
       });
+
+      if (!res.isConfirmed) return;
+
+      await deleteDoc(doc(db, "peserta", id));
+
+      Swal.fire({
+        icon: "success",
+        title: `Peserta "${nama}" telah dihapus`,
+        toast: true,
+        position: "top-end",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#111827",
+        color: "#f9fafb"
+      });
+
+      loadAll();
     }
+
+    // supaya bisa dipanggil oleh tombol onclick
+    window.hapusPeserta = hapusPeserta;
 
 
     /* ================== REALTIME ================== */
