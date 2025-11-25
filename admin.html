@@ -286,31 +286,33 @@
     });
     searchAdmin.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnSearchLocal.click(); });
 
-    /* ================== LOAD ALL ================== */
-    async function loadAll() {
-      listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
-      const snaps = await getDocs(collection(db, 'peserta'));
-      allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
+   /* ================== LOAD ALL ================== */
+async function loadAll() {
+  listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
 
-      allPeserta.sort((a, b) => {
-        if (a.registered && b.registered) return a.registeredAt - b.registeredAt;
-        if (a.registered && !b.registered) return -1;
-        if (!a.registered && b.registered) return 1;
-        return a.createdAt - b.createdAt;
-      });
+  const snaps = await getDocs(collection(db, 'peserta'));
+  allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
 
-      renderList(allPeserta);
+  /* ========== SORTING BERDASARKAN URUTAN DAFTAR ========== */
+  allPeserta.sort((a, b) => a.createdAt - b.createdAt);
 
-      const total = allPeserta.length;
-      const reg = allPeserta.filter(p => p.registered).length;
-      statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b>`;
+  renderList(allPeserta);
 
-      const alerts = allPeserta.filter(p => (p.doubleAttempts || 0) > 0);
-      if (alerts.length === 0) alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
-      else alertsEl.innerHTML = alerts.map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`).join('');
+  const total = allPeserta.length;
+  const reg = allPeserta.filter(p => p.registered).length;
+  statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b>`;
 
-      setupRealtimeListeners();
-    }
+  const alerts = allPeserta.filter(p => (p.doubleAttempts || 0) > 0);
+  if (alerts.length === 0) {
+    alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
+  } else {
+    alertsEl.innerHTML = alerts
+      .map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`)
+      .join('');
+  }
+
+  setupRealtimeListeners();
+}
 
     /* ================== RENDER LIST ================== */
     function renderList(list) {
@@ -325,6 +327,7 @@
         ${p.registered ? '<span class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm">Sudah</span>' : `<button class="btn btn-primary btn-mark" data-id="${p.id}">Tandai</button>`}
         <button class="btn btn-green btn-call" data-id="${p.id}">Panggil</button>
         <button class="btn btn-yellow btn-info" data-id="${p.id}">Detail</button>
+        <button class="px-3 py-1 bg-red-600 text-white rounded btn-hapus" data-id="${p.id}">Hapus</button>
       </div>
     </div>
   `).join('');
@@ -377,6 +380,37 @@
         };
       });
     }
+
+
+    // =========== HAPUS PESERTA ============= //
+document.querySelectorAll('.btn-hapus').forEach(btn => {
+  btn.onclick = async () => {
+    const id = btn.dataset.id;
+
+    const c = await Swal.fire({
+      title: "Hapus Peserta?",
+      text: "Data akan hilang permanen.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal"
+    });
+
+    if (!c.isConfirmed) return;
+
+    await deleteDoc(doc(db, "peserta", id));
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Peserta telah dihapus.",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    loadAll(); // reload data
+  };
+});
 
     /* ================== REALTIME ================== */
     function setupRealtimeListeners() {
