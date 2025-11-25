@@ -577,45 +577,32 @@
 
 
 
-    async function renderStatusList(list) {
-      const container = document.getElementById('statusList');
-      if (!list || list.length === 0) {
-        container.innerHTML = '<div class="text-slate-500 text-center py-4">Belum ada status.</div>';
-        return;
-      }
+function renderStatusList(list) {
+  const container = document.getElementById('statusList');
+  if (!list || list.length === 0) {
+    container.innerHTML = '<div class="text-slate-500 text-center py-4">Belum ada status.</div>';
+    return;
+  }
 
-      // mapping warna kategori
-      const categoryColors = {
-        Info: 'bg-blue-600',
-        Maintenance: 'bg-yellow-600',
-        Error: 'bg-red-600',
-        Success: 'bg-green-600'
-      };
-
-      // render HTML list status
-      container.innerHTML = list.map(s => {
-        const bgColor = categoryColors[s.category] || 'bg-gray-600';
-
-        return `
-      <div class="status-card flex items-start justify-between p-4 border rounded-lg bg-white shadow hover:shadow-lg transition">
-        <div>
-          <div class="font-semibold text-lg">${s.title}</div>
-          <div class="text-sm text-slate-500">${new Date(s.createdAt).toLocaleString()}</div>
-          <div class="mt-2 text-slate-700">${s.message}</div>
-          <div class="mt-1 text-xs px-2 py-1 inline-block rounded text-white font-semibold ${bgColor}">${s.category}</div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button class="btn btn-danger btn-delete" data-id="${s.id}" title="Hapus status">
-            🗑️ Hapus
-          </button>
-        </div>
+  container.innerHTML = list.map(s => `
+    <div class="status-card flex items-start justify-between p-4 border rounded-lg bg-white shadow hover:shadow-lg transition">
+      <div>
+        <div class="font-semibold text-lg">${s.title}</div>
+        <div class="text-sm text-slate-500">${new Date(s.createdAt).toLocaleString()}</div>
+        <div class="mt-2 text-slate-700">${s.message}</div>
+        <div class="mt-1 text-xs px-2 py-1 inline-block rounded text-white font-semibold ${s.category === 'Info' ? 'bg-blue-600' : s.category === 'Maintenance' ? 'bg-yellow-600' : s.category === 'Error' ? 'bg-red-600' : 'bg-green-600'}">${s.category}</div>
       </div>
-    `;
-      }).join('');
+      <div class="flex flex-col gap-2">
+        <button class="btn btn-danger btn-delete" data-id="${s.id}" title="Hapus status">
+          🗑️ Hapus
+        </button>
+      </div>
+    </div>
+  `).join('');
 
-      // <- panggil supaya tombol hapus bisa bekerja
-      setupDeleteStatusButtons();
-    }
+  setupDeleteStatusButtons(list); // <-- kirim list sebagai parameter
+}
+
 
 
     /* ================== HAPUS STATUS ================== */
