@@ -186,7 +186,7 @@
   <script type="module">
     import { auth, db } from '/firebase.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, doc, setDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { collection, getDocs, doc, setDoc, query, where, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     /* Elements */
     const listEl = document.getElementById('list');
@@ -286,33 +286,33 @@
     });
     searchAdmin.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnSearchLocal.click(); });
 
-   /* ================== LOAD ALL ================== */
-async function loadAll() {
-  listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
+    /* ================== LOAD ALL ================== */
+    async function loadAll() {
+      listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
 
-  const snaps = await getDocs(collection(db, 'peserta'));
-  allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
+      const snaps = await getDocs(collection(db, 'peserta'));
+      allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
 
-  /* ========== SORTING BERDASARKAN URUTAN DAFTAR ========== */
-  allPeserta.sort((a, b) => a.createdAt - b.createdAt);
+      /* ========== SORTING BERDASARKAN URUTAN DAFTAR ========== */
+      allPeserta.sort((a, b) => a.createdAt - b.createdAt);
 
-  renderList(allPeserta);
+      renderList(allPeserta);
 
-  const total = allPeserta.length;
-  const reg = allPeserta.filter(p => p.registered).length;
-  statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b>`;
+      const total = allPeserta.length;
+      const reg = allPeserta.filter(p => p.registered).length;
+      statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b>`;
 
-  const alerts = allPeserta.filter(p => (p.doubleAttempts || 0) > 0);
-  if (alerts.length === 0) {
-    alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
-  } else {
-    alertsEl.innerHTML = alerts
-      .map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`)
-      .join('');
-  }
+      const alerts = allPeserta.filter(p => (p.doubleAttempts || 0) > 0);
+      if (alerts.length === 0) {
+        alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
+      } else {
+        alertsEl.innerHTML = alerts
+          .map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`)
+          .join('');
+      }
 
-  setupRealtimeListeners();
-}
+      setupRealtimeListeners();
+    }
 
     /* ================== RENDER LIST ================== */
     function renderList(list) {
@@ -327,7 +327,7 @@ async function loadAll() {
         ${p.registered ? '<span class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm">Sudah</span>' : `<button class="btn btn-primary btn-mark" data-id="${p.id}">Tandai</button>`}
         <button class="btn btn-green btn-call" data-id="${p.id}">Panggil</button>
         <button class="btn btn-yellow btn-info" data-id="${p.id}">Detail</button>
-        <button class="px-3 py-1 bg-red-600 text-white rounded btn-hapus" data-id="${p.id}">Hapus</button>
+         <button class="px-3 py-1 bg-red-600 text-white rounded" onclick="hapusPeserta('${p.id}', '${p.nama}')">Hapus</button>
       </div>
     </div>
   `).join('');
@@ -383,34 +383,53 @@ async function loadAll() {
 
 
     // =========== HAPUS PESERTA ============= //
-document.querySelectorAll('.btn-hapus').forEach(btn => {
-  btn.onclick = async () => {
-    const id = btn.dataset.id;
+    async function hapusPeserta(id, nama) {
+      Swal.fire({
+        title: 'Hapus Peserta?',
+        html: `
+      <div class="text-slate-600">
+        Apakah kamu yakin ingin menghapus data peserta<br>
+        <b class="text-red-600">${nama}</b>?<br><br>
+        Data yang dihapus <b>tidak dapat dikembalikan</b>.
+      </div>
+    `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        reverseButtons: true,
+        backdrop: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteDoc(doc(db, "peserta", id));
 
-    const c = await Swal.fire({
-      title: "Hapus Peserta?",
-      text: "Data akan hilang permanen.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Hapus",
-      cancelButtonText: "Batal"
-    });
+            Swal.fire({
+              title: 'Berhasil!',
+              text: 'Peserta telah dihapus.',
+              icon: 'success',
+              timer: 1800,
+              showConfirmButton: false
+            });
 
-    if (!c.isConfirmed) return;
+            // reload ulang list peserta
+            loadAll();
 
-    await deleteDoc(doc(db, "peserta", id));
+          } catch (err) {
+            Swal.fire({
+              title: 'Gagal',
+              text: 'Terjadi kesalahan: ' + err.message,
+              icon: 'error'
+            });
+          }
+        }
+      });
+    }
 
-    Swal.fire({
-      icon: "success",
-      title: "Berhasil!",
-      text: "Peserta telah dihapus.",
-      timer: 1500,
-      showConfirmButton: false
-    });
-
-    loadAll(); // reload data
-  };
-});
 
     /* ================== REALTIME ================== */
     function setupRealtimeListeners() {
