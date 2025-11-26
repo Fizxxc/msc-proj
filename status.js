@@ -51,3 +51,24 @@ function renderStatus(updates) {
     statusList.appendChild(div);
   });
 }
+
+  // Menampilkan tanggal & jam saat ini di bawah tombol
+const infoDate = document.getElementById("infoDate");
+
+function updateInfoDate() {
+    const now = new Date();
+    const readable = now.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+    infoDate.textContent = "Waktu saat ini: " + readable;
+}
+
+// panggil sekali saat halaman dibuka
+updateInfoDate();
+
+setInterval(updateInfoDate, 60 * 1000);
+
