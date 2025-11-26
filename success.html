@@ -9,6 +9,9 @@
   <!-- Lordicon -->
   <script src="https://cdn.lordicon.com/lordicon.js"></script>
 
+   <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -183,8 +186,22 @@
     document.getElementById("btnSaveLink").onclick = () => {
       const linkSimpan = window.location.href;
       navigator.clipboard.writeText(linkSimpan)
-        .then(() => alert("Link halaman sukses telah disalin! ID Anda: " + id))
-        .catch(() => alert("Gagal menyalin link, silakan salin manual."));
+      .then(() => {
+        Swal.fire({
+        icon: 'success',
+        title: 'Link Disalin!',
+        text: "Link halaman sukses telah disalin! ID Anda: " + id,
+        confirmButtonText: 'OK'
+        });
+      })
+      .catch(() => {
+        Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: "Gagal menyalin link, silakan salin manual.",
+        confirmButtonText: 'OK'
+        });
+      });
     };
   </script>
 

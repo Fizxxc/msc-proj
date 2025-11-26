@@ -7,6 +7,7 @@
     <title>Pendaftaran Peserta</title>
     <link rel="icon" href="assets/img/MSC1.png" sizes="32x32" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <link rel="stylesheet" href="/styles/style.css">
 
@@ -14,13 +15,20 @@
         #pageLoader {
             transition: opacity .6s ease, transform .6s ease;
         }
+
         .sponsor-slider {
             white-space: nowrap;
             animation: slide 30s linear infinite;
         }
+
         @keyframes slide {
-            from { transform: translateX(0); }
-            to { transform: translateX(-100%); }
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-100%);
+            }
         }
     </style>
 </head>
@@ -28,16 +36,15 @@
 <body class="bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-100 min-h-screen">
 
     <!-- LOADING -->
-    <div id="pageLoader"
-        class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
+    <div id="pageLoader" class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
               flex flex-col items-center justify-center z-[9999]">
 
         <div class="relative">
             <div class="w-20 h-20 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
 
             <div class="absolute inset-0 flex items-center justify-center">
-                <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop"
-                    colors="primary:#1e3a8a" style="width:55px;height:55px">
+                <lord-icon src="https://cdn.lordicon.com/soseozvi.json" trigger="loop" colors="primary:#1e3a8a"
+                    style="width:55px;height:55px">
                 </lord-icon>
             </div>
         </div>
@@ -47,12 +54,22 @@
         </p>
     </div>
 
+    <!-- POPUP BAR -->
+    <div id="popupBar" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-4 shadow-lg flex items-center justify-between z-[9998] transform -translate-y-full transition-transform duration-300">
+        <div class="flex items-center gap-3 max-w-2xl">
+            <lord-icon src="https://cdn.lordicon.com/ooudhrrf.json" trigger="hover" colors="primary:#ffffff" style="width:24px;height:24px"></lord-icon>
+            <p class="text-sm sm:text-base font-semibold">📌 Pendaftaran dibuka! Jangan lewatkan kesempatan ini.</p>
+        </div>
+        <button onclick="document.getElementById('popupBar').style.transform='translateY(-100%)'" class="text-white hover:text-gray-200 transition">
+            ✕
+        </button>
+    </div>
     <!-- CONTAINER -->
     <div class="max-w-xl mx-auto px-4 sm:px-6 pt-10 pb-16">
 
         <div class="text-center mb-8">
             <img src="/assets/img/Logo metland.png"
-            class="w-39 h-36 sm:w-49 sm:h-46 mx-auto drop-shadow-lg object-contain" alt="Logo MSC">
+                class="w-39 h-36 sm:w-49 sm:h-46 mx-auto drop-shadow-lg object-contain" alt="Logo MSC">
         </div>
 
         <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-4 leading-tight text-center">
@@ -64,26 +81,24 @@
         </p>
 
         <!-- FORM DAFTAR -->
-<div class="bg-white p-5 rounded-xl shadow border mt-6">
+        <div class="bg-white p-5 rounded-xl shadow border mt-6">
 
-    <label class="block text-sm font-semibold text-gray-700">Nama lengkap</label>
-    <input id="nama"
-        class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
-        placeholder="Contoh: FizzxDevv">
+            <label class="block text-sm font-semibold text-gray-700">Nama lengkap</label>
+            <input id="nama" class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+                placeholder="Contoh: FizzxDevv">
 
-    <label class="block text-sm font-semibold text-gray-700">Nomor HP</label>
-    <input id="hp"
-        class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
-        placeholder="08xxxxxxx">
+            <label class="block text-sm font-semibold text-gray-700">Nomor HP</label>
+            <input id="hp" class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+                placeholder="08xxxxxxx">
 
-    <button id="btnDaftar"
-        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-150 ease-in-out">
-        Daftar Sekarang
-    </button>
+            <button id="btnDaftar"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-150 ease-in-out">
+                Daftar Sekarang
+            </button>
 
-    <!-- 👇 Tambahan: info tanggal & jam -->
-    <p id="infoDate" class="mt-3 text-xs text-gray-500 italic text-center"></p>
-</div>
+            <!-- 👇 Tambahan: info tanggal & jam -->
+            <p id="infoDate" class="mt-3 text-xs text-gray-500 italic text-center"></p>
+        </div>
 
         <div id="result" class="mt-5"></div>
 
@@ -94,7 +109,8 @@
             <div class="sponsor-slider flex items-center gap-10 py-2">
                 <template id="logos">
                     <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                    <img src="/assets/img/Logo metland.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                    <img src="/assets/img/Logo metland.png"
+                        class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
                     <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
                 </template>
 
@@ -108,7 +124,8 @@
             &copy; 2025 SMK METLAND CIBITUNG |
             Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
 
-            <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62 889-9111-4939</a></b></p>
+            <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62
+                        889-9111-4939</a></b></p>
         </footer>
 
     </div>
@@ -127,8 +144,24 @@
             const n = nama.value.trim();
             const h = hp.value.trim();
 
-            if (!n) return alert("Isi nama lengkap.");
-            if (!h) return alert("Isi nomor HP.");
+            if (!n) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nama Lengkap Kosong',
+                    text: 'Silakan isi nama lengkap Anda.',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+            if (!h) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nomor HP Kosong',
+                    text: 'Silakan isi nomor HP Anda.',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
 
             btnDaftar.disabled = true;
             btnDaftar.textContent = "Memproses...";
@@ -179,26 +212,34 @@
         });
 
         // Menampilkan tanggal & jam saat ini di bawah tombol
-const infoDate = document.getElementById("infoDate");
+        const infoDate = document.getElementById("infoDate");
 
-function updateInfoDate() {
-    const now = new Date();
-    const readable = now.toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-    infoDate.textContent = "Waktu pendaftaran saat ini: " + readable;
-}
+        function updateInfoDate() {
+            const now = new Date();
+            const readable = now.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+            infoDate.textContent = "Waktu pendaftaran saat ini: " + readable;
+        }
 
-// panggil sekali saat halaman dibuka
-updateInfoDate();
+        // panggil sekali saat halaman dibuka
+        updateInfoDate();
 
-setInterval(updateInfoDate, 60 * 1000);
+        setInterval(updateInfoDate, 60 * 1000);
 
+
+        Swal.fire({
+            icon: 'info',
+            title: 'BACA DULU!',
+            text: 'Pastikan data yang Anda masukkan sudah benar sebelum mendaftar,dan setelah mendaftar silahkan simpan link yang ada di page berikutnya untuk keperluan saat di panggil.',
+            confirmButtonColor: '#2563eb'
+        });
     </script>
 
 </body>
+
 </html>
