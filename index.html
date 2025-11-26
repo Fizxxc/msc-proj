@@ -55,12 +55,15 @@
     </div>
 
     <!-- POPUP BAR -->
-    <div id="popupBar" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-4 shadow-lg flex items-center justify-between z-[9998] transform -translate-y-full transition-transform duration-300">
+    <div id="popupBar"
+        class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-4 shadow-lg flex items-center justify-between z-[9998] transform -translate-y-full transition-transform duration-300">
         <div class="flex items-center gap-3 max-w-2xl">
-            <lord-icon src="https://cdn.lordicon.com/ooudhrrf.json" trigger="hover" colors="primary:#ffffff" style="width:24px;height:24px"></lord-icon>
+            <lord-icon src="https://cdn.lordicon.com/ooudhrrf.json" trigger="hover" colors="primary:#ffffff"
+                style="width:24px;height:24px"></lord-icon>
             <p class="text-sm sm:text-base font-semibold">📌 Pendaftaran dibuka! Jangan lewatkan kesempatan ini.</p>
         </div>
-        <button onclick="document.getElementById('popupBar').style.transform='translateY(-100%)'" class="text-white hover:text-gray-200 transition">
+        <button onclick="document.getElementById('popupBar').style.transform='translateY(-100%)'"
+            class="text-white hover:text-gray-200 transition">
             ✕
         </button>
     </div>
@@ -102,6 +105,61 @@
 
         <div id="result" class="mt-5"></div>
 
+        <!-- SEARCH BOX UNTUK CARI ID PENDAFTARAN -->
+        <div class="bg-white mt-10 p-5 rounded-xl shadow border">
+
+            <h2 class="text-xl font-bold text-gray-800 text-center mb-3">
+                🔍 Cari ID Pendaftaran Anda
+            </h2>
+
+            <p class="text-gray-600 text-sm text-center mb-4">
+                Masukkan nomor HP Anda untuk menemukan ID pendaftaran anda.
+            </p>
+
+            <div class="flex gap-3">
+                <input id="searchHp" type="text" placeholder="Masukkan nomor HP Anda..."
+                    class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-400">
+
+                <button id="btnCari"
+                    class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                    Cari
+                </button>
+            </div>
+
+            <!-- HASIL MUNCUL DI SINI -->
+            <div id="searchResult" class="mt-4 text-center text-sm text-gray-700"></div>
+
+            <!-- TOMBOL KE SUCCESS PAGE -->
+            <div id="goSuccessWrapper" class="mt-4 hidden">
+                <button id="goSuccessBtn"
+                    class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition">
+                    Pergi ke Halaman Status Saya
+                </button>
+            </div>
+
+        </div>
+
+
+        <!-- STATUS PREVIEW -->
+        <section class="mt-10 bg-white p-5 rounded-xl shadow border">
+
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-bold text-gray-800">📢 Status Terbaru</h2>
+
+                <!-- BUTTON KE PAGE STATUS -->
+                <a href="/status"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
+                    Lihat Semua Status
+                </a>
+            </div>
+
+            <!-- TEMPAT PREVIEW STATUS -->
+            <div id="statusPreview" class="space-y-3">
+                <p class="text-gray-500 text-sm italic">Memuat status...</p>
+            </div>
+        </section>
+
+
         <!-- SPONSOR -->
         <div class="mt-12 overflow-hidden relative">
             <p class="text-center text-sm sm:text-base font-semibold mb-4 text-gray-700">Didukung oleh:</p>
@@ -130,13 +188,20 @@
 
     </div>
 
+    <script type="module" src="/status-preview.js"></script>
     <script type="module">
         import { db } from '/firebase.js';
-        import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const nama = document.getElementById("nama");
         const hp = document.getElementById("hp");
         const btnDaftar = document.getElementById("btnDaftar");
+        const btnCari = document.getElementById("btnCari");
+        const searchHp = document.getElementById("searchHp");
+        const searchResult = document.getElementById("searchResult");
+        const goSuccessWrapper = document.getElementById("goSuccessWrapper");
+        const goSuccessBtn = document.getElementById("goSuccessBtn");
+
 
         const norm = s => (s || "").toString().trim().toLowerCase();
 
@@ -237,6 +302,57 @@
             title: 'BACA DULU!',
             text: 'Pastikan data yang Anda masukkan sudah benar sebelum mendaftar,dan setelah mendaftar silahkan simpan link yang ada di page berikutnya untuk keperluan saat di panggil.',
             confirmButtonColor: '#2563eb'
+        });
+
+
+        let foundID = null; // <- Menyimpan ID yang ditemukan
+
+        btnCari.addEventListener("click", async () => {
+            const hp = searchHp.value.trim();
+
+            goSuccessWrapper.classList.add("hidden"); // sembunyikan tombol dulu
+            foundID = null;
+
+            if (!hp) {
+                searchResult.innerHTML = `<p class="text-red-600 font-semibold">Nomor HP tidak boleh kosong.</p>`;
+                return;
+            }
+
+            searchResult.innerHTML = `<p class="text-blue-600">Mencari data...</p>`;
+
+            const q = query(collection(db, "peserta"), where("hp", "==", hp));
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+                searchResult.innerHTML = `<p class="text-red-600 font-semibold">ID tidak ditemukan, pastikan nomor HP benar.</p>`;
+                return;
+            }
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                foundID = doc.id; // simpan ID
+
+                searchResult.innerHTML = `
+            <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-2">
+                <p class="font-semibold text-gray-700">🆔 ID Anda:</p>
+                <p class="text-blue-700 font-bold text-lg mt-1">${doc.id}</p>
+
+                <p class="text-sm mt-2 text-gray-600">
+                    Nama: <b>${data.nama}</b><br>
+                    Terdaftar pada: ${data.date || "-"}
+                </p>
+            </div>
+        `;
+
+                goSuccessWrapper.classList.remove("hidden"); // tampilkan tombol
+            });
+        });
+
+        // tombol menuju success
+        goSuccessBtn.addEventListener("click", () => {
+            if (foundID) {
+                window.location.href = "/success?id=" + foundID;
+            }
         });
     </script>
 
