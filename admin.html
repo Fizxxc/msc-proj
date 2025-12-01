@@ -1,96 +1,44 @@
 <!doctype html>
 <html lang="id">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard</title>
-  <link rel="icon" href="assets/img/MSC1.png" sizes="32x32" />
-  <!-- Tailwind CSS -->
+  <title>Admin Dashboard - Doorprize (Mode B)</title>
+
+  <!-- Styles / Tailwind CDN (dev) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Polyfill for older browsers -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 
-  <!-- XLSX -->
+  <!-- XLSX UMD (already used in your project) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- html5-qrcode -->
+  <!-- html5-qrcode for QR scanning -->
   <script src="https://raw.githack.com/mebjas/html5-qrcode/master/minified/html5-qrcode.min.js"></script>
 
   <style>
-    body {
-      background: #f1f5f9;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-      border: 1px solid #eef2f7;
-    }
-
-    .input {
-      width: 100%;
-      padding: .6rem .75rem;
-      border: 1px solid #e6edf3;
-      border-radius: .6rem;
-    }
-
-    .btn {
-      padding: .5rem .9rem;
-      border-radius: .6rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: #1e3a8a;
-      color: white;
-    }
-
-    .btn-green {
-      background: #059669;
-      color: white;
-    }
-
-    .btn-yellow {
-      background: #d97706;
-      color: white;
-    }
-
-    .btn-danger {
-      background: #dc2626;
-      color: white;
-    }
-
-    .list-item:hover {
-      transform: translateY(-2px);
-      transition: .12s;
-      box-shadow: 0 6px 16px rgba(2, 6, 23, 0.06);
-    }
-
-    .modal-backdrop {
-      background: rgba(2, 6, 23, 0.45);
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 60;
-    }
+    /* Minor custom styles to make UI look modern (B style) */
+    body { background: #f1f5f9; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 6px 18px rgba(15,23,42,0.06); border: 1px solid #eef2f7; }
+    .input { width: 100%; padding: .6rem .75rem; border: 1px solid #e6edf3; border-radius: .6rem; }
+    .btn { padding: .5rem .9rem; border-radius: .6rem; font-weight: 600; }
+    .btn-primary { background: #1e3a8a; color: white; }
+    .btn-green { background: #059669; color: white; }
+    .btn-yellow { background: #d97706; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    .list-item:hover { transform: translateY(-2px); transition: .12s; box-shadow: 0 6px 16px rgba(2,6,23,0.06); }
+    /* modal */
+    .modal-backdrop { background: rgba(2,6,23,0.45); position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:60; }
   </style>
 </head>
-
 <body>
 
   <!-- Header -->
   <div class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-4">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="text-2xl font-bold">ADMIN PAGE</div>
+        <div class="text-2xl font-bold">Festara — Admin (B)</div>
         <div class="text-sm opacity-90">Dashboard registrasi & monitoring</div>
       </div>
       <div class="flex items-center gap-2">
@@ -126,10 +74,16 @@
                 <input id="searchAdmin" class="input" placeholder="Cari nama..." />
                 <button id="btnSearchLocal" class="btn btn-yellow">Cari</button>
               </div>
-              <p id="searchHint" class="text-xs text-slate-400 mt-2">Tekan Enter atau klik Cari. Pencarian
-                case-insensitive.</p>
+              <p id="searchHint" class="text-xs text-slate-400 mt-2">Tekan Enter atau klik Cari. Pencarian case-insensitive.</p>
+            </div>
 
-                <button id="btnAddStatus" class="btn btn-primary">➕ Tambah Status</button>
+            <div>
+              <label class="text-sm font-medium">Import Doorprize (opsional)</label>
+              <div class="mt-2 flex gap-2">
+                <input id="fileDoorprize" type="file" accept=".xlsx" class="input" />
+                <button id="importDoorprizes" class="btn btn-green">Import</button>
+              </div>
+              <p class="text-xs text-slate-400 mt-2">Kolom yang didukung: <code>code</code> / <code>number</code> / <code>nomor</code> atau kolom pertama.</p>
             </div>
           </div>
         </div>
@@ -169,166 +123,180 @@
       <div id="qrReader" class="w-full h-80 bg-slate-100 rounded overflow-hidden"></div>
 
       <div class="mt-3 text-sm text-slate-600">
-        Hasil scan akan mencoba membaca ID peserta (dokumen id). Format QR sebaiknya berisi ID dokumen peserta saja.
+        Hasil scan akan mencoba membaca ID peserta (dokumen id). Format QR sebaiknya berisi ID dokumen peserta saja (mis: <code>nama_satu_abc1</code>) atau path <code>peserta/&lt;id&gt;</code>.
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" style="display:none"
-    class="fixed right-6 bottom-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+  <!-- Minimal Toast -->
+  <div id="toast" style="display:none" class="fixed right-6 bottom-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg"></div>
 
-  </div>
-  </div>
+     <!-- FOOTER -->
+      <footer class="mt-10 text-center text-xs text-gray-500">
+        &copy; 2025 Festara. All rights reserved. |
+        Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
+      </footer>
+  
+<script type="module">
+/* ----------------------------
+   Dependencies:
+   - /firebase.js (your existing file)
+   - html5-qrcode (included above)
+   - xlsx (included above)
+   This script updates admin UI and adds QR scanning.
+   Keep core functions (import, assign) unchanged except switching collection name to "peserta" where appropriate.
+----------------------------- */
 
-  <div class="max-w-4xl mx-auto p-6 space-y-4" id="statusList">
-    <!-- Status akan dimuat di sini -->
-    <div class="text-slate-500 text-center py-4">Memuat status...</div>
-  </div>
+import { auth, db } from '/firebase.js';
 
-  <!-- Footer -->
-  <footer class="mt-10 text-center text-xs text-gray-500">
-    &copy; 2025 SMK METLAND CIBITUNG |
-    Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
-    <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62 889-9111-4939</b></p>
-  </footer>
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  <script type="module">
-    import { auth, db } from '/firebase.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { collection, getDocs, doc, setDoc, query, where, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  collection, getDocs, doc, setDoc, updateDoc, query, where, limit, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    /* Elements */
-    const listEl = document.getElementById('list');
-    const statsEl = document.getElementById('stats');
-    const alertsEl = document.getElementById('alerts');
-    const fileParticipants = document.getElementById('fileParticipants');
-    const importParticipantsBtn = document.getElementById('importParticipants');
-    const btnRefresh = document.getElementById('btnRefresh');
-    const btnLogout = document.getElementById('btnLogout');
-    const btnScanQR = document.getElementById('btnScanQR');
-    const qrModal = document.getElementById('qrModal');
-    const closeQrModal = document.getElementById('closeQrModal');
-    const qrReader = document.getElementById('qrReader');
-    const btnSearchLocal = document.getElementById('btnSearchLocal');
-    const searchAdmin = document.getElementById('searchAdmin');
-    const statusListEl = document.getElementById('statusList');
+/* Elements */
+const listEl = document.getElementById('list');
+const statsEl = document.getElementById('stats');
+const alertsEl = document.getElementById('alerts');
+const remainingEl = document.getElementById('remaining'); // may not exist but safe
+const fileParticipants = document.getElementById('fileParticipants');
+const importParticipantsBtn = document.getElementById('importParticipants');
+const fileDoorprize = document.getElementById('fileDoorprize');
+const importDoorprizesBtn = document.getElementById('importDoorprizes');
+const btnRefresh = document.getElementById('btnRefresh');
+const btnLogout = document.getElementById('btnLogout');
+const btnScanQR = document.getElementById('btnScanQR');
+const qrModal = document.getElementById('qrModal');
+const closeQrModal = document.getElementById('closeQrModal');
+const qrReader = document.getElementById('qrReader');
+const btnSearchLocal = document.getElementById('btnSearchLocal');
+const searchAdmin = document.getElementById('searchAdmin');
 
-    let allPeserta = []; // cache
-    let html5QrcodeScanner = null;
+let allPeserta = []; // cache
 
-    /* ================== SweetAlert2 helpers ================== */
-    function confirmSwal(title = 'Yakin?', text = '', icon = 'warning') {
-      return Swal.fire({
-        title,
-        text,
-        icon,
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-      });
-    }
+/* small helper */
+function toast(msg, time = 2500) {
+  const t = document.getElementById('toast');
+  if(!t) return alert(msg);
+  t.innerText = msg;
+  t.style.display = 'block';
+  setTimeout(()=> t.style.display='none', time);
+}
 
-    function toastSwal(msg, icon = 'success', timer = 2000) {
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer,
-        icon,
-        title: msg,
-        background: '#111827',
-        color: '#f9fafb'
-      });
-    }
+/* ========== AUTH CHECK ========== */
+onAuthStateChanged(auth, async (user) => {
+  if(!user) return location.href = '/login';
+  // check admin doc exists
+  const adminSnaps = await getDocs(collection(db, 'admins'));
+  const isAdmin = adminSnaps.docs.some(d => d.id === user.uid);
+  if(!isAdmin){
+    alert('Akses ditolak: Anda bukan admin.');
+    await signOut(auth);
+    return location.href = '/login';
+  }
+});
 
-    /* ================== AUTH CHECK ================== */
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return location.href = '/login';
-      const adminSnaps = await getDocs(collection(db, 'admins'));
-      const isAdmin = adminSnaps.docs.some(d => d.id === user.uid);
-      if (!isAdmin) {
-        alert('Akses ditolak: Anda bukan admin.');
-        await signOut(auth);
-        return location.href = '/login';
-      }
-    });
+/* ========== IMPORT PARTICIPANTS ========== */
+importParticipantsBtn.addEventListener('click', async () => {
+  const file = fileParticipants.files[0];
+  if(!file) return alert('Pilih file .xlsx');
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 
-    /* ================== IMPORT PESERTA ================== */
-    importParticipantsBtn.addEventListener('click', async () => {
-      const file = fileParticipants.files[0];
-      if (!file) return alert('Pilih file .xlsx');
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+  let created = 0;
+  for(const r of rows){
+    const nama = (r['Nama'] || r['nama'] || r['Name'] || '').toString().trim();
+    if(!nama) continue;
+    const id = nama.toLowerCase().replace(/\s+/g,'_') + '_' + Math.random().toString(36).slice(2,6);
 
-      let created = 0;
-      for (const r of rows) {
-        const nama = (r['Nama'] || r['nama'] || r['Name'] || '').toString().trim();
-        if (!nama) continue;
-        const id = nama.toLowerCase().replace(/\s+/g, '_') + '_' + Math.random().toString(36).slice(2, 6);
+    await setDoc(doc(db, 'peserta', id), {
+      nama,
+      umur: r['Umur'] || r['umur'] || '',
+      hp: r['Nomor HP'] || r['hp'] || r['No HP'] || '',
+      alamat: r['Alamat (contoh: kirana)'] || r['Alamat'] || '',
+      ukuran: r['Ukuran Baju'] || r['ukuran'] || '',
+      persetujuan: (r['Persetujuan']||'').toString().toLowerCase().includes('setuju'),
+      bukti: r['Bukti Transfer Pembayaran'] || r['bukti'] || '',
+      createdAt: new Date().toISOString(),
+      registered: false,
+      doubleAttempts: 0
+    }, { merge: true });
 
-        await setDoc(doc(db, 'peserta', id), {
-          nama,
-          hp: r['Nomor HP'] || r['hp'] || r['No HP'] || '',
-          createdAt: Date.now(),
-          registered: false,
-          registeredAt: null,
-          dipanggil: false,
-          dipanggilAt: null
-        }, { merge: true });
+    created++;
+  }
 
-        created++;
-      }
+  alert('Import peserta selesai: ' + created);
+  await loadAll();
+});
 
-      toastSwal('Import peserta selesai: ' + created);
-      await loadAll();
-    });
 
-    /* ================== SEARCH ================== */
-    btnSearchLocal.addEventListener('click', () => {
-      const q = searchAdmin.value.trim().toLowerCase();
-      if (!q) return loadAll();
-      const filtered = allPeserta.filter(p => (p.nama || '').toLowerCase().includes(q));
-      renderList(filtered);
-    });
-    searchAdmin.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnSearchLocal.click(); });
+/* ========== IMPORT DOORPRIZE (optional) ========== */
+importDoorprizesBtn.addEventListener('click', async ()=>{
+  const file = fileDoorprize.files[0];
+  if(!file) return alert('Pilih file doorprize .xlsx');
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
 
-    /* ================== LOAD ALL ================== */
-    async function loadAll() {
-      listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
+  let created = 0;
+  for(const r of rows){
+    const code = (r.code || r.number || r.nomor || Object.values(r)[0] || '').toString().trim();
+    if(!code) continue;
+    await setDoc(doc(db, 'doorprizes', 'dp_' + code), { code, assignedTo: null, assignedAt: null }, { merge: true });
+    created++;
+  }
+  alert('Import doorprize selesai: ' + created);
+  await loadAll();
+});
 
-      const snaps = await getDocs(collection(db, 'peserta'));
-      allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
+/* ========== SEARCH LOCAL ========== */
+btnSearchLocal.addEventListener('click', async ()=> {
+  const q = searchAdmin.value.trim();
+  if(!q) return loadAll();
+  const nrm = q.toLowerCase().trim();
+  const filtered = allPeserta.filter(p => (p.nama || '').toLowerCase().includes(nrm));
+  renderList(filtered);
+});
 
-      /* ========== SORTING BERDASARKAN URUTAN DAFTAR ========== */
-      allPeserta.sort((a, b) => a.createdAt - b.createdAt);
+/* Enter key for search */
+searchAdmin.addEventListener('keydown', (e)=> { if(e.key === 'Enter') btnSearchLocal.click(); });
 
-      renderList(allPeserta);
+/* ========== LOAD ALL ========== */
+async function loadAll(){
+  listEl.innerHTML = '<div class="text-slate-500">Memuat peserta...</div>';
 
-      const total = allPeserta.length;
-      const reg = allPeserta.filter(p => p.registered).length;
-      statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b>`;
+  // peserta
+  const snaps = await getDocs(collection(db, 'peserta'));
+  allPeserta = snaps.docs.map(s => ({ id: s.id, ...s.data() }));
 
-      const alerts = allPeserta.filter(p => (p.doubleAttempts || 0) > 0);
-      if (alerts.length === 0) {
-        alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
-      } else {
-        alertsEl.innerHTML = alerts
-          .map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`)
-          .join('');
-      }
+  // doorprize remaining (optional)
+  const dpSnaps = await getDocs(query(collection(db, 'doorprizes'), where('assignedTo','==', null)));
+  const remaining = dpSnaps.size;
 
-      setupRealtimeListeners();
-    }
+  renderList(allPeserta);
 
-    /* ================== RENDER LIST ================== */
-    function renderList(list) {
-      if (!list || list.length === 0) { listEl.innerHTML = '<div class="text-slate-500">Tidak ada peserta.</div>'; return; }
-      listEl.innerHTML = list.map(p => `
+  // stats
+  const total = allPeserta.length;
+  const reg = allPeserta.filter(p => p.registered).length;
+  statsEl.innerHTML = `Total peserta: <b>${total}</b><br/>Sudah registrasi ulang: <b class="text-green-600">${reg}</b><br/>Doorprize (sisa): <b class="text-indigo-600">${remaining}</b>`;
+
+  // alerts (doubleAttempts) — note collection might be 'peserta' or 'participants' earlier; use peserta
+  const alerts = allPeserta.filter(p => (p.doubleAttempts||0) > 0);
+  if(alerts.length === 0) alertsEl.innerHTML = '<div class="text-slate-500">Tidak ada percobaan ganda.</div>';
+  else {
+    alertsEl.innerHTML = alerts.map(a => `<div class="p-2 rounded border bg-red-50"><b>${a.nama}</b> — percobaan ganda: ${a.doubleAttempts}</div>`).join('');
+  }
+}
+
+/* render list */
+function renderList(list){
+  if(!list || list.length === 0) { listEl.innerHTML = '<div class="text-slate-500">Tidak ada peserta.</div>'; return; }
+  listEl.innerHTML = list.map(p => `
     <div class="list-item flex items-center justify-between p-3 border rounded-lg bg-white">
       <div>
         <div class="font-semibold">${p.nama}</div>
@@ -336,329 +304,130 @@
       </div>
       <div class="flex items-center gap-2">
         ${p.registered ? '<span class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm">Sudah</span>' : `<button class="btn btn-primary btn-mark" data-id="${p.id}">Tandai</button>`}
-        <button class="btn btn-green btn-call" data-id="${p.id}">Panggil</button>
         <button class="btn btn-yellow btn-info" data-id="${p.id}">Detail</button>
-         <button class="px-3 py-1 bg-red-600 text-white rounded" onclick="hapusPeserta('${p.id}', '${p.nama}')">Hapus</button>
       </div>
     </div>
   `).join('');
 
-      document.querySelectorAll('.btn-mark').forEach(b => {
-        b.onclick = async () => {
-          const id = b.dataset.id;
-          const p = allPeserta.find(x => x.id === id);
-          if (!p) return;
+  // attach handlers
+  document.querySelectorAll('.btn-mark').forEach(b=>{
+    b.onclick = async (e) => {
+      const id = b.dataset.id;
+      if(!confirm('Tandai peserta sudah registrasi ulang?')) return;
+      await setDoc(doc(db, 'peserta', id), { registered: true, registeredAt: new Date().toISOString() }, { merge: true });
+      toast('Tandai berhasil');
+      await loadAll();
+    };
+  });
 
-          const res = await confirmSwal('Konfirmasi registrasi', `Tandai ${p.nama} sudah registrasi ulang?`);
-          if (!res.isConfirmed) return;
-
-          await setDoc(doc(db, 'peserta', id), { registered: true, registeredAt: Date.now() }, { merge: true });
-          toastSwal('Peserta berhasil ditandai ✔');
-          await loadAll();
-        };
-      });
-
-      document.querySelectorAll('.btn-call').forEach(b => {
-        b.onclick = async () => {
-          const id = b.dataset.id;
-          const p = allPeserta.find(x => x.id === id);
-          if (!p) return;
-
-          const res = await confirmSwal('Konfirmasi panggilan', `Panggil peserta ${p.nama}?`);
-          if (!res.isConfirmed) return;
-
-          await setDoc(doc(db, 'peserta', id), { dipanggil: true, dipanggilAt: Date.now() }, { merge: true });
-          toastSwal(`Peserta ${p.nama} dipanggil!`);
-          const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
-          audio.play();
-        };
-      });
-
-      document.querySelectorAll('.btn-info').forEach(b => {
-        b.onclick = () => {
-          const id = b.dataset.id;
-          const p = allPeserta.find(x => x.id === id);
-          if (!p) return;
-
-          const tanggalDaftar = p.createdAt
-            ? new Date(p.createdAt).toLocaleString('id-ID', {
-              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            })
-            : '-';
-
-          Swal.fire({
-            title: p.nama,
-            html: `
-        <p>HP: ${p.hp || '-'}</p>
-        <p>Registered: ${p.registered ? 'Ya' : 'Belum'}</p>
-        <p>Dipanggil: ${p.dipanggil ? 'Ya' : 'Belum'}</p>
-        <p>Tanggal daftar: <b>${tanggalDaftar}</b></p>
-      `,
-            icon: 'info'
-          });
-        };
-      });
-    }
-
-
-    // === HAPUS PESERTA ===
-    async function hapusPeserta(id, nama) {
-      const res = await Swal.fire({
-        title: "Hapus Peserta?",
-        html: `Apakah kamu yakin ingin menghapus <b>${nama}</b>? Data tidak bisa dikembalikan.`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Hapus",
-        cancelButtonText: "Batal",
-        reverseButtons: true
-      });
-
-      if (!res.isConfirmed) return;
-
-      await deleteDoc(doc(db, "peserta", id));
-
-      Swal.fire({
-        icon: "success",
-        title: `Peserta "${nama}" telah dihapus`,
-        toast: true,
-        position: "top-end",
-        timer: 2000,
-        showConfirmButton: false,
-        background: "#111827",
-        color: "#f9fafb"
-      });
-
-      loadAll();
-    }
-
-    // supaya bisa dipanggil oleh tombol onclick
-    window.hapusPeserta = hapusPeserta;
-
-
-    /* ================== REALTIME ================== */
-    function setupRealtimeListeners() {
-      allPeserta.forEach(p => {
-        const ref = doc(db, 'peserta', p.id);
-        onSnapshot(ref, snap => {
-          if (!snap.exists()) return;
-          const data = snap.data();
-
-          if (data.dipanggil) {
-            const existingToast = document.getElementById('toast-call-' + p.id);
-            if (existingToast) return;
-
-            const t = document.createElement('div');
-            t.id = 'toast-call-' + p.id;
-            t.className = 'fixed top-6 right-6 bg-yellow-400 text-black px-4 py-2 rounded shadow-lg z-[9999] animate-pulse';
-            t.textContent = `Peserta ${p.nama} dipanggil!`;
-            document.body.appendChild(t);
-
-            const audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
-            audio.play();
-
-            setTimeout(() => t.remove(), 5000);
-          }
-
-          renderList(allPeserta);
-        });
-      });
-    }
-
-    /* ================== QR SCANNER ================== */
-    btnScanQR.addEventListener('click', () => {
-      qrModal.style.display = 'flex';
-      startQrScanner();
-    });
-    closeQrModal.addEventListener('click', () => { stopQrScanner(); qrModal.style.display = 'none'; });
-
-    async function startQrScanner() {
-      if (typeof Html5Qrcode === 'undefined') { alert('QR library belum ter-load.'); return; }
-      qrReader.innerHTML = '';
-      html5QrcodeScanner = new Html5Qrcode('qrReader');
-      const config = { fps: 10, qrbox: { width: 300, height: 300 } };
-
-      html5QrcodeScanner.start({ facingMode: "environment" }, config,
-        qrCodeMessage => {
-          let id = qrCodeMessage.includes('/') ? qrCodeMessage.split('/').pop() : qrCodeMessage;
-          const found = allPeserta.find(p => p.id === id);
-          if (found) location.href = `/konfirmasi-admin?id=${found.id}`;
-          else Swal.fire('Tidak ditemukan', 'QR tidak valid', 'error');
-          stopQrScanner();
-          qrModal.style.display = 'none';
-        },
-        () => { }
-      ).catch(err => Swal.fire('Error', 'Gagal memulai kamera', 'error'));
-    }
-
-    function stopQrScanner() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().catch(() => { });
-        html5QrcodeScanner.clear();
-        html5QrcodeScanner = null;
-      }
-    }
-
-    /* ================== REFRESH ================== */
-    btnRefresh.addEventListener('click', () => loadAll());
-
-    /* ================== LOGOUT ================== */
-    btnLogout.addEventListener('click', async () => {
-      const res = await confirmSwal('Logout?', 'Anda yakin ingin keluar dari admin?', 'question');
-      if (res.isConfirmed) signOut(auth).then(() => location.href = '/login');
-    });
-
-    /* ================== TAMBAH STATUS ================== */
-
-
-
-    const statusCol = collection(db, 'status');
-
-    onSnapshot(statusCol, (snapshot) => {
-      const allStatus = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderStatusList(allStatus);
-    });
-
-
-    const btnAddStatus = document.getElementById('btnAddStatus');
-
-    btnAddStatus.addEventListener('click', async () => {
-      const { value: formValues } = await Swal.fire({
-        title: 'Tambah Status Baru',
-        html:
-          `<input id="swal-title" class="swal2-input" placeholder="Judul...">` +
-          `<textarea id="swal-message" class="swal2-textarea" placeholder="Isi pesan..." rows="4"></textarea>` +
-          `<select id="swal-category" class="swal2-select">
-         <option value="Info" selected>Info</option>
-         <option value="Maintenance">Maintenance</option>
-         <option value="Error">Error</option>
-         <option value="Success">Success</option>
-       </select>`,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan',
-        cancelButtonText: 'Batal',
-        preConfirm: () => {
-          const title = document.getElementById('swal-title').value.trim();
-          const message = document.getElementById('swal-message').value.trim();
-          const category = document.getElementById('swal-category').value;
-          if (!title || !message) Swal.showValidationMessage('Judul dan pesan tidak boleh kosong!');
-          return { title, message, category };
-        }
-      });
-
-      if (formValues) {
-        try {
-          const newDocRef = doc(collection(db, 'status'));
-          await setDoc(newDocRef, {
-            title: formValues.title,
-            message: formValues.message,
-            category: formValues.category,
-            createdAt: Date.now()
-          });
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Status baru telah ditambahkan.',
-            timer: 1800,
-            showConfirmButton: false
-          });
-
-        } catch (err) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: 'Terjadi kesalahan: ' + err.message
-          });
-        }
-      }
-    });
-
-
-
-function renderStatusList(list) {
-  const container = document.getElementById('statusList');
-  if (!list || list.length === 0) {
-    container.innerHTML = '<div class="text-slate-500 text-center py-4">Belum ada status.</div>';
-    return;
-  }
-
-  container.innerHTML = list.map(s => `
-    <div class="status-card flex items-start justify-between p-4 border rounded-lg bg-white shadow hover:shadow-lg transition">
-      <div>
-        <div class="font-semibold text-lg">${s.title}</div>
-        <div class="text-sm text-slate-500">${new Date(s.createdAt).toLocaleString()}</div>
-        <div class="mt-2 text-slate-700">${s.message}</div>
-        <div class="mt-1 text-xs px-2 py-1 inline-block rounded text-white font-semibold ${s.category === 'Info' ? 'bg-blue-600' : s.category === 'Maintenance' ? 'bg-yellow-600' : s.category === 'Error' ? 'bg-red-600' : 'bg-green-600'}">${s.category}</div>
-      </div>
-      <div class="flex flex-col gap-2">
-        <button class="btn btn-danger btn-delete" data-id="${s.id}" title="Hapus status">
-          🗑️ Hapus
-        </button>
-      </div>
-    </div>
-  `).join('');
-
-  setupDeleteStatusButtons(list); // <-- kirim list sebagai parameter
-}
-
-
-
-    /* ================== HAPUS STATUS ================== */
-    function setupDeleteStatusButtons(statusArray) {
-  document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.onclick = async () => {
-      const id = btn.dataset.id;
-      const statusDoc = statusArray.find(s => s.id === id);
-      if (!statusDoc) return;
-
-      const res = await Swal.fire({
-        title: 'Hapus Status?',
-        html: `
-          <div class="text-slate-600">
-            Apakah kamu yakin ingin menghapus status<br>
-            <b class="text-red-600">${statusDoc.title}</b>?<br><br>
-            Status yang dihapus <b>tidak dapat dikembalikan</b>.
-          </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        reverseButtons: true,
-      });
-
-      if (res.isConfirmed) {
-        try {
-          await deleteDoc(doc(db, 'status', id));
-          Swal.fire({
-            icon: 'success',
-            title: 'Terhapus!',
-            text: 'Status telah dihapus.',
-            timer: 1800,
-            showConfirmButton: false
-          });
-        } catch (err) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: 'Terjadi kesalahan: ' + err.message
-          });
-        }
-      }
+  document.querySelectorAll('.btn-info').forEach(b=>{
+    b.onclick = (e) => {
+      const id = b.dataset.id;
+      const p = allPeserta.find(x=> x.id === id);
+      if(!p) return;
+      showParticipantDetailModal(p);
     };
   });
 }
 
+/* small detail modal (uses browser alert for simplicity) */
+function showParticipantDetailModal(p){
+  const info = [
+    `Nama: ${p.nama||'-'}`,
+    `Umur: ${p.umur||'-'}`,
+    `HP: ${p.hp||'-'}`,
+    `Alamat: ${p.alamat||'-'}`,
+    `Ukuran baju: ${p.ukuran||'-'}`,
+    `Persetujuan: ${p.persetujuan ? 'Ya' : 'Tidak'}`,
+    `Registered: ${p.registered ? 'Ya' : 'Belum'}`
+  ].join('\n');
+  alert(info);
+}
 
-    /* ================== INIT ================== */
-    loadAll();
-  </script>
+/* ========== QR SCANNER ========== */
+let html5QrcodeScanner = null;
 
+btnScanQR.addEventListener('click', ()=> {
+  qrModal.style.display = 'flex';
+  startQrScanner();
+});
+
+closeQrModal.addEventListener('click', async ()=> {
+  stopQrScanner();
+  qrModal.style.display = 'none';
+});
+
+async function startQrScanner(){
+  // ensure html5Qrcode global exists
+  if(typeof Html5Qrcode === 'undefined'){ alert('QR library belum ter-load.'); return; }
+
+  // create scanner
+  const qrRegionId = 'qrReader';
+  // clear previous
+  qrReader.innerHTML = '';
+  html5QrcodeScanner = new Html5Qrcode(qrRegionId);
+
+  const config = { fps: 10, qrbox: { width: 300, height: 300 } };
+
+  try {
+    await html5QrcodeScanner.start(
+      { facingMode: "environment" },
+      config,
+      qrCodeMessage => {
+        // on success
+        onQrScanned(qrCodeMessage);
+        // optionally stop scanning automatically after a successful scan
+        stopQrScanner();
+        qrModal.style.display = 'none';
+      },
+      errorMessage => {
+        // ignore per-frame errors
+      }
+    );
+  } catch (err) {
+    alert('Gagal memulai kamera: ' + err);
+  }
+}
+
+function stopQrScanner(){
+  if(html5QrcodeScanner){
+    html5QrcodeScanner.stop().catch(()=>{}).finally(()=> {
+      try { html5QrcodeScanner.clear(); } catch(e) {}
+      html5QrcodeScanner = null;
+      qrReader.innerHTML = '';
+    });
+  }
+}
+
+async function onQrScanned(text){
+  let id = text;
+
+  // Jika QR berisi URL, ambil ID paling belakang
+  if(text.includes('/')) id = text.split('/').pop();
+
+  // Cari di array cache peserta
+  const found = allPeserta.find(p => p.id === id);
+
+  if(found){
+    stopQrScanner();
+    qrModal.style.display = 'none';
+    location.href = `/konfirmasi-admin?id=${found.id}`;
+    return;
+  }
+
+  alert("Peserta tidak ditemukan. Pastikan QR berisi ID peserta.");
+}
+
+
+/* ========== Other helpers: refresh & logout ========== */
+btnRefresh.addEventListener('click', loadAll);
+btnLogout.addEventListener('click', ()=> {
+  signOut(auth).then(()=> location.href = '/login');
+});
+
+/* load initially (in case auth already ready) */
+setTimeout(()=> loadAll().catch(()=>{}), 300);
+
+</script>
 </body>
-
 </html>
