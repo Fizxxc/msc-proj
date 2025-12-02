@@ -4,24 +4,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Registrasi Ulang - Festara</title>
+    <title>Pendaftaran Peserta</title>
+    <link rel="icon" href="assets/img/MSC1.png" sizes="32x32" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Polyfill for older browsers -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <link rel="stylesheet" href="/styles/style.css">
 
     <style>
-        /* Fade out transition */
         #pageLoader {
             transition: opacity .6s ease, transform .6s ease;
         }
 
-        /* CSS untuk slider sponsor (tambahan sederhana) */
         .sponsor-slider {
             white-space: nowrap;
             animation: slide 30s linear infinite;
@@ -37,11 +31,11 @@
             }
         }
     </style>
-
 </head>
 
 <body class="bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-100 min-h-screen">
 
+    <!-- LOADING -->
     <div id="pageLoader" class="fixed inset-0 bg-gradient-to-br from-blue-100 via-white to-blue-200
               flex flex-col items-center justify-center z-[9999]">
 
@@ -73,42 +67,43 @@
             ✕
         </button>
     </div>
-
+    <!-- CONTAINER -->
     <div class="max-w-xl mx-auto px-4 sm:px-6 pt-10 pb-16">
 
         <div class="text-center mb-8">
-            <img src="/assets/img/festara.png" class="w-32 h-32 sm:w-40 sm:h-40 mx-auto drop-shadow-lg"
-                alt="Logo Festara">
-
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-4 leading-tight">
-                Registrasi Ulang Jalan Sehat
-            </h1>
-
-            <p class="text-gray-600 text-xs sm:text-sm mt-1">
-                Masukkan nama untuk melakukan registrasi ulang.
-            </p>
+            <img src="/assets/img/Logo metland.png"
+                class="w-39 h-36 sm:w-49 sm:h-46 mx-auto drop-shadow-lg object-contain" alt="Logo MSC">
         </div>
 
-        <label for="searchName" class="block text-sm font-semibold text-gray-700">Nama lengkap</label>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mt-4 leading-tight text-center">
+            Form Pendaftaran Peserta
+        </h1>
 
-        <div class="mt-2 flex flex-col sm:flex-row gap-3">
-            <input id="searchName" class="flex-1 px-4 py-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-400"
-                placeholder="Contoh: Budi Setiawan" />
+        <p class="text-gray-600 text-xs sm:text-sm mt-1 text-center">
+            Silakan isi data berikut untuk mendaftar kegiatan.
+        </p>
 
-            <button id="btnSearch"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center sm:w-14 transition duration-150 ease-in-out disabled:bg-blue-400 disabled:cursor-not-allowed">
-                <span id="searchIcon">
-                    <lord-icon src="https://cdn.lordicon.com/vhdgmtyj.json" trigger="hover" colors="primary:#e4e4e4"
-                        style="width:28px;height:28px">
-                    </lord-icon>
-                </span>
-                <div id="searchLoader" class="hidden">
-                    <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
+        <!-- FORM DAFTAR -->
+        <div class="bg-white p-5 rounded-xl shadow border mt-6">
+
+            <label class="block text-sm font-semibold text-gray-700">Nama lengkap</label>
+            <input id="nama" class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+                placeholder="Contoh: FizzxDevv">
+
+            <label class="block text-sm font-semibold text-gray-700">Nomor HP</label>
+            <input id="hp" class="w-full px-4 py-2 rounded-lg border mt-1 mb-4 focus:ring-2 focus:ring-blue-400"
+                placeholder="08xxxxxxx">
+
+            <button id="btnDaftar"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-150 ease-in-out">
+                Daftar Sekarang
             </button>
+
+            <!-- 👇 Tambahan: info tanggal & jam -->
+            <p id="infoDate" class="mt-3 text-xs text-gray-500 italic text-center"></p>
         </div>
 
-        <div id="result" class="mt-5 hidden"></div>
+        <div id="result" class="mt-5"></div>
 
         <!-- SEARCH BOX UNTUK CARI ID PENDAFTARAN -->
         <div class="bg-white mt-10 p-5 rounded-xl shadow border">
@@ -142,233 +137,202 @@
                 </button>
             </div>
 
-            <div class="mt-8 text-center text-gray-600">
-                <p class="text-xs sm:text-sm">Butuh verifikasi oleh panitia? Tunjukkan QR pada halaman sukses ke
-                    petugas.</p>
-            </div>
-
-            <div class="mt-12 overflow-hidden relative">
-                <p class="text-center text-sm sm:text-base font-semibold mb-4 text-gray-700">Didukung oleh:</p>
-
-                <div class="sponsor-slider flex items-center gap-10 py-2">
-
-                    <template id="logos">
-                        <img src="/assets/img/1.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/2.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/3.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/4.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/5.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/6.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                        <img src="/assets/img/7.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
-                    </template>
-
-                    <div class="flex items-center gap-10" id="logoRow1"></div>
-                    <div class="flex items-center gap-10 ml-10" id="logoRow2"></div>
-
-                </div>
-            </div>
-
-            <footer class="mt-10 text-center text-xs text-gray-500">
-                &copy; 2025 Festara. All rights reserved. |
-                Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
-            </footer>
-
         </div>
 
-        <script type="module">
-            import { db, storage } from '/firebase.js'; // pastikan path sesuai
-            // Menggunakan query dan where untuk pencarian yang efisien
-            import { collection, getDocs, doc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-            import { ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
-            const elName = document.getElementById('searchName');
-            const btnSearch = document.getElementById('btnSearch');
-            const searchIcon = document.getElementById('searchIcon');
-            const searchLoader = document.getElementById('searchLoader');
-            const result = document.getElementById('result');
+        <!-- STATUS PREVIEW -->
+        <section class="mt-10 bg-white p-5 rounded-xl shadow border">
 
-            // Fungsi normalisasi untuk nama (menghilangkan spasi tepi dan membuat huruf kecil)
-            const norm = s => (s || '').toString().trim().toLowerCase();
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-bold text-gray-800">📢 Status Terbaru</h2>
 
-            /**
-             * Mencari peserta berdasarkan nama menggunakan kueri Firebase yang efisien
-             * Membutuhkan field 'namaLower' di data Firebase peserta.
-             */
-            async function findParticipantByName(name) {
-                const nrm = norm(name);
-                if (!nrm) return null;
+                <!-- BUTTON KE PAGE STATUS -->
+                <a href="/status"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
+                    Lihat Semua Status
+                </a>
+            </div>
 
-                try {
-                    // Query hanya data yang cocok, JAUH lebih efisien!
-                    const q = query(collection(db, 'peserta'), where('namaLower', '==', nrm));
-                    const snaps = await getDocs(q);
+            <!-- TEMPAT PREVIEW STATUS -->
+            <div id="statusPreview" class="space-y-3">
+                <p class="text-gray-500 text-sm italic">Memuat status...</p>
+            </div>
+        </section>
 
-                    if (!snaps.empty) {
-                        const s = snaps.docs[0];
-                        return { id: s.id, data: s.data() };
-                    }
-                } catch (error) {
-                    console.error("Error mencari peserta:", error);
-                    alert('Terjadi kesalahan saat mencari data. Cek koneksi Anda.');
-                }
-                return null;
-            }
 
-            // --- Fungsi Kontrol UI ---
-            function setLoadingState(isLoading) {
-                btnSearch.disabled = isLoading;
-                if (isLoading) {
-                    searchIcon.classList.add('hidden');
-                    searchLoader.classList.remove('hidden');
-                } else {
-                    searchIcon.classList.remove('hidden');
-                    searchLoader.classList.add('hidden');
-                }
-            }
-            // --- End UI Control ---
+        <!-- SPONSOR -->
+        <div class="mt-12 overflow-hidden relative">
+            <p class="text-center text-sm sm:text-base font-semibold mb-4 text-gray-700">Didukung oleh:</p>
 
-            btnSearch.addEventListener('click', async () => {
-                const name = elName.value.trim();
-                if (!name) return alert('Masukkan nama.');
+            <div class="sponsor-slider flex items-center gap-10 py-2">
+                <template id="logos">
+                    <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                    <img src="/assets/img/Logo metland.png"
+                        class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                    <img src="/assets/img/logo.png" class="h-10 sm:h-12 grayscale hover:grayscale-0 transition" />
+                </template>
 
-                result.classList.add('hidden');
-                result.innerHTML = '';
-                setLoadingState(true); // Mulai loading
+                <div class="flex items-center gap-10" id="logoRow1"></div>
+                <div class="flex items-center gap-10 ml-10" id="logoRow2"></div>
+            </div>
+        </div>
 
-                const found = await findParticipantByName(name);
-                setLoadingState(false); // Selesai loading
+        <!-- FOOTER -->
+        <footer class="mt-10 text-center text-xs text-gray-500">
+            &copy; 2025 SMK METLAND CIBITUNG |
+            Dev <a href="https://www.instagram.com/fizzx.docx/" class="text-blue-900 font-bold">FizzxDevv</a>
 
-                if (!found) {
-                    result.classList.remove('hidden');
-                    result.innerHTML = `<div class="p-4 bg-red-100 border border-red-300 rounded-lg text-red-700 font-semibold">❌ Nama tidak ada atau belum daftar. Hubungi panitia.</div>`;
-                    return;
-                }
+            <p><b>Contact me: <a href="https://wa.me/6288991114939" class="text-blue-900 font-bold">+62
+                        889-9111-4939</a></b></p>
+        </footer>
 
-                // tampilkan info & tombol registrasi ulang
-                result.classList.remove('hidden');
-                result.innerHTML = `
-                <div id="card" class="p-5 bg-white border rounded-lg shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-lg font-bold">${found.data.nama}</div>
-                            <div class="text-xs text-gray-500">ID: ${found.id}</div>
-                            <div class="mt-1 text-sm text-gray-600">HP: ${found.data.hp || '-'}</div>
-                        </div>
-                        <div>
-                            ${found.data.registered
-                        ? '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm font-medium">Sudah registrasi</span>'
-                        : '<button id="btnReg" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-150 ease-in-out text-sm font-medium">Registrasi Ulang</button>'}
-                        </div>
-                    </div>
+    </div>
 
-                    <div class="mt-4">
-                        <button id="btnScreenshot" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg w-full transition duration-150 ease-in-out">Ambil Screenshot Bukti</button>
-                    </div>
-                </div>
-            `;
+    <script type="module" src="/status-preview.js"></script>
+    <script type="module">
+        import { db } from '/firebase.js';
+        import { collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-                const btnReg = document.getElementById('btnReg');
-                if (btnReg) {
-                    btnReg.addEventListener('click', async () => {
-                        btnReg.disabled = true; // Nonaktifkan tombol saat proses update
-                        btnReg.textContent = 'Memproses...';
+        const nama = document.getElementById("nama");
+        const hp = document.getElementById("hp");
+        const btnDaftar = document.getElementById("btnDaftar");
+        const btnCari = document.getElementById("btnCari");
+        const searchHp = document.getElementById("searchHp");
+        const searchResult = document.getElementById("searchResult");
+        const goSuccessWrapper = document.getElementById("goSuccessWrapper");
+        const goSuccessBtn = document.getElementById("goSuccessBtn");
 
-                        try {
-                            // update peserta -> registered true
-                            await updateDoc(doc(db, 'peserta', found.id), {
-                                registered: true,
-                                registeredAt: new Date().toISOString()
-                            });
 
-                            // redirect ke halaman success
-                            localStorage.setItem('last_registered', found.id);
-                            window.location.href = '/success.html?id=' + encodeURIComponent(found.id);
+        const norm = s => (s || "").toString().trim().toLowerCase();
 
-                        } catch (error) {
-                            console.error("Error saat registrasi ulang:", error);
-                            alert('Gagal registrasi ulang. Cek koneksi atau hubungi panitia.');
-                            btnReg.disabled = false;
-                            btnReg.textContent = 'Registrasi Ulang';
-                        }
-                    });
-                }
+        btnDaftar.addEventListener("click", async () => {
+            const n = nama.value.trim();
+            const h = hp.value.trim();
 
-                document.getElementById('btnScreenshot').addEventListener('click', async () => {
-                    const btnScreenshot = document.getElementById('btnScreenshot');
-                    btnScreenshot.disabled = true;
-                    btnScreenshot.textContent = 'Mengambil...';
-
-                    try {
-                        const node = document.getElementById('card');
-                        const canvas = await html2canvas(node, { scale: 3, backgroundColor: null });
-                        const png = canvas.toDataURL('image/png');
-
-                        // upload ke storage
-                        const sref = ref(storage, `proofs/${found.id}_${Date.now()}.png`);
-                        await uploadString(sref, png.split(',')[1], 'base64', { contentType: 'image/png' });
-                        const url = await getDownloadURL(sref);
-
-                        alert('✅ Screenshot tersimpan:\n' + url);
-
-                    } catch (error) {
-                        console.error("Error mengambil screenshot:", error);
-                        alert('Gagal mengambil screenshot.');
-                    }
-
-                    btnScreenshot.disabled = false;
-                    btnScreenshot.textContent = 'Ambil Screenshot Bukti';
+            if (!n) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nama Lengkap Kosong',
+                    text: 'Silakan isi nama lengkap Anda.',
+                    confirmButtonColor: '#2563eb'
                 });
+                return;
+            }
+            if (!h) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nomor HP Kosong',
+                    text: 'Silakan isi nomor HP Anda.',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            btnDaftar.disabled = true;
+            btnDaftar.textContent = "Memproses...";
+
+            const now = new Date();
+            const readable = now.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
             });
 
+            try {
+                const docRef = await addDoc(collection(db, "peserta"), {
+                    nama: n,
+                    hp: h,
+                    namaLower: norm(n),
+                    registered: false,
+                    date: readable,         // **date ditampilkan**
+                    createdAt: now.getTime() // **date untuk sorting**
+                });
 
-            /* DUPLIKASI LOGO OTOMATIS UNTUK SLIDER */
-            // Dibuat 3 kali untuk memastikan loop yang mulus.
-            const logos = document.getElementById("logos").content;
-            document.getElementById("logoRow1").appendChild(logos.cloneNode(true));
-            document.getElementById("logoRow1").appendChild(logos.cloneNode(true)); // Copy tambahan
-            document.getElementById("logoRow2").appendChild(logos.cloneNode(true));
+                localStorage.setItem("last_register", docRef.id);
+                window.location.href = "/success?id=" + docRef.id;
 
+            } catch (err) {
+                console.error(err);
+                alert("Gagal mendaftar. Coba lagi.");
+            }
 
-            // SCRIPT UNTUK LOADING OVERLAY
-            window.addEventListener("load", () => {
-                const loader = document.getElementById("pageLoader");
+            btnDaftar.disabled = false;
+            btnDaftar.textContent = "Daftar Sekarang";
+        });
 
-                // Animasi keluar
-                loader.style.opacity = "0";
-                loader.style.transform = "scale(1.1)";
+        // Duplikasi logo slider
+        const logos = document.getElementById("logos").content;
+        document.getElementById("logoRow1").appendChild(logos.cloneNode(true));
+        document.getElementById("logoRow1").appendChild(logos.cloneNode(true));
+        document.getElementById("logoRow2").appendChild(logos.cloneNode(true));
 
-                setTimeout(() => loader.style.display = "none", 600);
+        // Loading remove
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("pageLoader");
+            loader.style.opacity = "0";
+            loader.style.transform = "scale(1.1)";
+            setTimeout(() => loader.style.display = "none", 600);
+        });
+
+        // Menampilkan tanggal & jam saat ini di bawah tombol
+        const infoDate = document.getElementById("infoDate");
+
+        function updateInfoDate() {
+            const now = new Date();
+            const readable = now.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
             });
+            infoDate.textContent = "Waktu pendaftaran saat ini: " + readable;
+        }
+
+        // panggil sekali saat halaman dibuka
+        updateInfoDate();
+
+        setInterval(updateInfoDate, 60 * 1000);
 
 
-            let foundID = null; // <- Menyimpan ID yang ditemukan
+        Swal.fire({
+            icon: 'info',
+            title: 'BACA DULU!',
+            text: 'Pastikan data yang Anda masukkan sudah benar sebelum mendaftar,dan setelah mendaftar silahkan simpan link yang ada di page berikutnya untuk keperluan saat di panggil.',
+            confirmButtonColor: '#2563eb'
+        });
 
-            btnCari.addEventListener("click", async () => {
-                const hp = searchHp.value.trim();
 
-                goSuccessWrapper.classList.add("hidden"); // sembunyikan tombol dulu
-                foundID = null;
+        let foundID = null; // <- Menyimpan ID yang ditemukan
 
-                if (!hp) {
-                    searchResult.innerHTML = `<p class="text-red-600 font-semibold">Nomor HP tidak boleh kosong.</p>`;
-                    return;
-                }
+        btnCari.addEventListener("click", async () => {
+            const hp = searchHp.value.trim();
 
-                searchResult.innerHTML = `<p class="text-blue-600">Mencari data...</p>`;
+            goSuccessWrapper.classList.add("hidden"); // sembunyikan tombol dulu
+            foundID = null;
 
-                const q = query(collection(db, "peserta"), where("hp", "==", hp));
-                const snap = await getDocs(q);
+            if (!hp) {
+                searchResult.innerHTML = `<p class="text-red-600 font-semibold">Nomor HP tidak boleh kosong.</p>`;
+                return;
+            }
 
-                if (snap.empty) {
-                    searchResult.innerHTML = `<p class="text-red-600 font-semibold">ID tidak ditemukan, pastikan nomor HP benar.</p>`;
-                    return;
-                }
+            searchResult.innerHTML = `<p class="text-blue-600">Mencari data...</p>`;
 
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    foundID = doc.id; // simpan ID
+            const q = query(collection(db, "peserta"), where("hp", "==", hp));
+            const snap = await getDocs(q);
 
-                    searchResult.innerHTML = `
+            if (snap.empty) {
+                searchResult.innerHTML = `<p class="text-red-600 font-semibold">ID tidak ditemukan, pastikan nomor HP benar.</p>`;
+                return;
+            }
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                foundID = doc.id; // simpan ID
+
+                searchResult.innerHTML = `
             <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-2">
                 <p class="font-semibold text-gray-700">🆔 ID Anda:</p>
                 <p class="text-blue-700 font-bold text-lg mt-1">${doc.id}</p>
@@ -380,24 +344,18 @@
             </div>
         `;
 
-                    goSuccessWrapper.classList.remove("hidden"); // tampilkan tombol
-                });
+                goSuccessWrapper.classList.remove("hidden"); // tampilkan tombol
             });
+        });
 
-            // tombol menuju success
-            goSuccessBtn.addEventListener("click", () => {
-                if (foundID) {
-                    window.location.href = "/success?id=" + foundID;
-                }
-            });
+        // tombol menuju success
+        goSuccessBtn.addEventListener("click", () => {
+            if (foundID) {
+                window.location.href = "/success?id=" + foundID;
+            }
+        });
+    </script>
 
-            Swal.fire({
-                icon: 'info',
-                title: 'DI BACA DAHULU YA GUYS!',
-                text: 'Jika nama anda tidak ada, gunakan nomor telepon anda yang ada di menu (CARI ID PENDAFTARAN) untuk menemukan ID pendaftaran anda.',
-                confirmButtonColor: '#2563eb'
-            });
-        </script>
 </body>
 
 </html>
